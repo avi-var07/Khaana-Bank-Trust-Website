@@ -1,0 +1,64 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  padding: 50px 40px;
+  border-top: 5px solid var(--primary);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.closeBtn:hover { color: var(--primary); }
+
+.modal h2 { margin-bottom: 10px; font-size: 1.8rem; }
+.modal p { color: var(--text-muted); margin-bottom: 30px; font-size: 1rem; }
+
+.form { display: flex; flex-direction: column; gap: 20px; }
+
+.inputGroup { display: flex; flex-direction: column; gap: 8px; }
+.inputGroup label { font-size: 0.9rem; font-weight: 600; }
+.inputGroup input {
+  padding: 12px 15px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  outline: none;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.inputGroup input:focus { border-color: var(--primary); }
+
+.successMessage { text-align: center; padding: 20px 0; }
+.successIcon { font-size: 4rem; margin-bottom: 20px; }
+.successMessage h3 { margin-bottom: 10px; color: var(--accent); }
+
+.error { color: var(--blood); margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: 600; }
+
+@media (max-width: 480px) {
+  .modal { padding: 40px 20px; }
+}

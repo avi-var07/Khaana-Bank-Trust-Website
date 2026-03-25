@@ -1,0 +1,149 @@
+.navbar {
+  height: var(--header-height);
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 96%;
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.navLogo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logoText {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.accent {
+  color: var(--primary);
+}
+
+.subLogo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+.navLinks {
+  display: flex;
+  gap: 35px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex: 1;
+  justify-content: center;
+  margin: 0 40px;
+}
+
+.navLinks a {
+  position: relative;
+  padding: 8px 0;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.navLinks a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: var(--transition);
+}
+
+.navLinks a:hover {
+  color: var(--primary);
+}
+
+.navLinks a:hover::after {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.supportBtn {
+  padding: 10px 22px;
+  font-weight: 700;
+  border-radius: 50px;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.supportBtn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 112, 67, 0.2);
+}
+
+.subscribeBtn {
+  padding: 12px 28px;
+  font-weight: 700;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 112, 67, 0.3);
+  transition: var(--transition);
+}
+
+.subscribeBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 112, 67, 0.4);
+}
+
+@media (max-width: 1200px) {
+  .navLinks { gap: 15px; font-size: 0.85rem; }
+  .logoText { font-size: 1.3rem; }
+}
+
+@media (max-width: 1024px) {
+  .navLinks {
+    display: none; 
+  }
+}
