@@ -59,8 +59,8 @@ export default function SupportPage() {
         },
         prefill: {
           name: "Donor",
-          email: "donor@example.com",
-          contact: "9999999999"
+          email: "donor@khaanabanktrust",
+          contact: "8840775823"
         },
         theme: {
           color: "#ff5e14" // NGO primary color
@@ -114,17 +114,17 @@ export default function SupportPage() {
                     <h3>Bank Transfer</h3>
                     <p>You can donate directly to our NGO bank account:</p>
                     <div className="bank-details">
-                      <p><strong>Account Name:</strong> Khaana BANK TRUST</p>
-                      <p><strong>Bank:</strong> [Bank Name]</p>
-                      <p><strong>Account Number:</strong> [Account Number]</p>
-                      <p><strong>IFSC Code:</strong> [IFSC Code]</p>
-                      <p><strong>Branch:</strong> [Branch Name]</p>
+                      <p><strong>Account Name:</strong> Khaana Bank</p>
+                      <p><strong>Bank:</strong> Punjab National Bank</p>
+                      <p><strong>Account Number:</strong> 1375100100003551</p>
+                      <p><strong>IFSC Code:</strong>PUNB0137510 </p>
+                      <p><strong>Branch:</strong>Mughalsarai </p>
                     </div>
                   </div>
                   <div className="info-item">
                     <h3>In-Kind Donations</h3>
                     <p>We accept raw food materials, clothes, medicines, and educational kits.</p>
-                    <p>Please contact us at <strong>+91 XXXXXXXXXX</strong> to schedule a pickup or drop-off.</p>
+                    <p>Please contact us at <strong>+91 8840775823</strong> to schedule a pickup or drop-off.</p>
                   </div>
                 </div>
               </div>

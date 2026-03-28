@@ -32,10 +32,9 @@ const Footer = () => {
             <h4>Connect With Us</h4>
             <div className={styles.icons}>
               {/* Icons will be added here later */}
-              <a href="#" className={styles.icon}>Ig</a>
-              <a href="#" className={styles.icon}>Fb</a>
-              <a href="#" className={styles.icon}>Yt</a>
-              <a href="#" className={styles.icon}>Tw</a>
+              <a href="https://www.instagram.com/khana_bank_trust?igsh=MXcxc3R1dW9iOHJmdw==" className={styles.icon}>Ig</a>
+              <a href="https://www.facebook.com/khaanabank/" className={styles.icon}>Fb</a>
+              <a href="https://youtube.com/c/KhaanaBankTrust" className={styles.icon}>Yt</a>
             </div>
             <Link href="/contact" className={styles.contactBtn}>Get In Touch</Link>
           </div>

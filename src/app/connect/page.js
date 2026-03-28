@@ -1,11 +1,9 @@
 'use client';
 export default function ConnectPage() {
   const socialLinks = [
-    { name: "Instagram", icon: "📸", handle: "@Khaanabank", link: "https://instagram.com" },
-    { name: "Facebook", icon: "👥", handle: "Khaana Bank Trust", link: "https://facebook.com" },
-    { name: "YouTube", icon: "🎥", handle: "Khaana Bank TV", link: "https://youtube.com" },
-    { name: "Twitter", icon: "🐦", handle: "@Khaanabank", link: "https://twitter.com" },
-    { name: "LinkedIn", icon: "💼", handle: "Khaana Bank Trust", link: "https://linkedin.com" }
+    { name: "Instagram", icon: "📸", handle: "@Khana_bank_trust", link: "https://www.instagram.com/khana_bank_trust?igsh=MXcxc3R1dW9iOHJmdw==" },
+    { name: "Facebook", icon: "👥", handle: "Khaana Bank", link: "https://www.facebook.com/khaanabank/" },
+    { name: "YouTube", icon: "🎥", handle: "KhaanaBankTrust", link: "https://youtube.com/c/KhaanaBankTrust" },
   ];
 
   return (
@@ -45,14 +43,14 @@ export default function ConnectPage() {
                 <div className="icon">💬</div>
                 <h3>Chat on WhatsApp</h3>
                 <p>Connect directly with Ankit Tripathi Ji for immediate queries or coordination.</p>
-                <a href="https://wa.me/91XXXXXXXXXX" className="btn btn-secondary">WhatsApp Ankit Ji</a>
+                <a href="https://wa.me/918840775823" className="btn btn-secondary">WhatsApp Ankit Ji</a>
               </div>
 
               <div className="direct-box glass-card gmail fade-in" style={{ marginTop: '30px' }}>
                 <div className="icon">✉️</div>
                 <h3>Send an Email</h3>
                 <p>Prefer email? Send us a direct message to our official mailbox.</p>
-                <a href="mailto:info@Khaanabank.org" className="btn btn-secondary">Open Gmail</a>
+                <a href="mailto:khaanabanktrust@gmail.com" className="btn btn-secondary">Open Gmail</a>
               </div>
             </div>
           </div>

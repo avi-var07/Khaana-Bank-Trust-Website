@@ -28,8 +28,8 @@ export default function ContactPage() {
               <div className="info-section" style={{ marginTop: '40px' }}>
                 <h3>Website Developers</h3>
                 <div className="contact-card glass-card">
-                  <p><strong>Dev Team</strong></p>
-                  <p>📧 dev@ngo-support.com</p>
+                  <p><strong>Aviral Ved Prakash Varshney</strong></p>
+                  <p>📧 aviralvarshney07@gmail.com</p>
                   <p>🌐 portfolio-link.com</p>
                 </div>
               </div>
@@ -45,15 +45,15 @@ export default function ContactPage() {
               <form className="contact-form">
                 <div className="form-group">
                   <label>Full Name</label>
-                  <input type="text" placeholder="Your Name" required />
+                  <input type="text" placeholder="Donor Name" required />
                 </div>
                 <div className="form-group">
                   <label>Email Address</label>
-                  <input type="email" placeholder="email@example.com" required />
+                  <input type="email" placeholder="khaanbanktrust@gmail.com" required />
                 </div>
                 <div className="form-group">
                   <label>Phone Number</label>
-                  <input type="tel" placeholder="+91 XXXXXXXXXX" required />
+                  <input type="tel" placeholder="+91 8840775823" required />
                 </div>
                 <div className="form-group">
                   <label>Subject</label>
