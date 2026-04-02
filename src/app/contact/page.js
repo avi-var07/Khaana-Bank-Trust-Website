@@ -26,7 +26,7 @@ export default function ContactPage() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
               </div>
               <h4>Email Us</h4>
-              <p>khaanbanktrust@gmail.com</p>
+              <p>khaanabanktrust@gmail.com</p>
             </div>
             <div className="info-card glass-card">
               <div className="icon-box">
@@ -108,8 +108,8 @@ export default function ContactPage() {
                 designation="Lead Full Stack Developer"
                 description="Aviral Ved Prakash Varshney is a Full Stack Developer specializing in Java and React, focused on building scalable web applications and real-world software solutions. Passionate about problem-solving, backend development, and creating technology that makes a meaningful impact."
                 email="aviralvarshney07@gmail.com"
-                github="https://github.com/aviralvarshney07"
-                linkedin="https://linkedin.com/in/aviralvarshney07"
+                github="https://github.com/avi-var07"
+                linkedin="https://www.linkedin.com/in/avi7/"
                 photoPath="/images/Aviral.png"
                 photoPosition="center 12%"
               />
