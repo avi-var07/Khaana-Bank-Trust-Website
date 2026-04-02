@@ -64,7 +64,7 @@ export default function AdminDashboard() {
         const result = await res.json();
         setNewEvent({ title: '', date: '', description: '', type: 'General', location: '' });
         fetchData();
-        alert(`✓ Event created successfully! Email sent to ${result.emailCount || 0} subscribers.`);
+        alert(result.message || '✓ Event created successfully!');
       }
     } catch (err) {
       alert('Failed to create event');

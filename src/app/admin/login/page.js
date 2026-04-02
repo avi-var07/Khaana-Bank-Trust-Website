@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('khaanabanktrust@gmail.com');
@@ -71,10 +72,14 @@ export default function AdminLoginPage() {
               {loading ? 'Signing in...' : 'Login'}
             </button>
             <p style={{ marginTop: '14px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Forgot password? Contact admin at{' '}
-              <a href="mailto:khaanabanktrust@gmail.com" style={{ color: 'var(--primary)', fontWeight: '600' }}>
-                khaanabanktrust@gmail.com
-              </a>
+              <Link href="/admin/forgot-password" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                Forgot password? Request reset approval
+              </Link>
+            </p>
+            <p style={{ marginTop: '10px', fontSize: '0.95rem' }}>
+              <Link href="/admin/request-access" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                Request to Join As Admin
+              </Link>
             </p>
           </form>
         </div>

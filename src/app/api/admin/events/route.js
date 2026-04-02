@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readDB, writeDB } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import transporter from '@/lib/mailer';
 import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 export async function GET(request) {
@@ -21,7 +20,6 @@ export async function POST(request) {
   try {
     const data = await request.json();
     const events = await readDB('events.json');
-    const subscribers = await readDB('subscribers.json');
     
     const newEvent = {
         ...data,
@@ -32,26 +30,10 @@ export async function POST(request) {
     events.unshift(newEvent);
     await writeDB('events.json', events);
 
-    let emailCount = 0;
-    for (const sub of subscribers) {
-      try {
-        await transporter.sendMail({
-          from: '"Khaana Bank Trust" <info@khaanabanktrust.org>',
-          to: sub.email,
-          subject: `New Event Update: ${newEvent.title}`,
-          text: `Hi ${sub.name},\n\nA new update from Khaana Bank Trust:\n\nEvent: ${newEvent.title}\nDate: ${newEvent.date}\nLocation: ${newEvent.location || 'TBA'}\nType: ${newEvent.type || 'General'}\n\n${newEvent.description || ''}\n\nThank you for supporting Khaana Bank Trust.`,
-        });
-        emailCount++;
-      } catch (err) {
-        console.error(`Failed to send event email to ${sub.email}:`, err);
-      }
-    }
-
     return NextResponse.json(
       {
         event: newEvent,
-        emailCount,
-        message: 'Event created. Welcome email sent to subscribers.'
+        message: 'Event created successfully. Use Notify All when you want to send notifications.'
       },
       { status: 201 }
     );

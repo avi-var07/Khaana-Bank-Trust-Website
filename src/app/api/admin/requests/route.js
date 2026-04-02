@@ -9,6 +9,25 @@ function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
+function verifyEmailVerificationToken(token, email) {
+  try {
+    if (!token || !token.includes('.')) return false;
+    const [encoded, signature] = token.split('.');
+    const expected = crypto
+      .createHmac('sha256', process.env.ADMIN_SESSION_SECRET || 'change-this-admin-session-secret')
+      .update(encoded)
+      .digest('base64url');
+    if (expected !== signature) return false;
+
+    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
+    if (!payload?.exp || Date.now() > payload.exp) return false;
+    if (payload?.purpose !== 'admin-join') return false;
+    return payload?.email === email;
+  } catch {
+    return false;
+  }
+}
+
 function generateApprovalToken(email) {
   const payload = {
     email,
@@ -42,7 +61,7 @@ function verifyApprovalToken(token) {
 // POST: Create new admin request
 export async function POST(request) {
   try {
-    const { email, password, requestedBy } = await request.json();
+    const { email, password, requestedBy, verificationToken } = await request.json();
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
@@ -50,6 +69,13 @@ export async function POST(request) {
 
     if (!password || password.length < 6) {
       return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    }
+
+    if (!verifyEmailVerificationToken(verificationToken, email)) {
+      return NextResponse.json(
+        { error: 'Email verification is required before submitting request' },
+        { status: 400 }
+      );
     }
 
     // Check if already approved
