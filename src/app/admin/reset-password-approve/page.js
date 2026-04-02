@@ -1,20 +1,28 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-function ResetPasswordApproveContent() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+export default function ResetPasswordApprovePage() {
+  const [token, setToken] = useState('');
 
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('Approving password reset request...');
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setToken(params.get('token') || '');
+  }, []);
+
+  useEffect(() => {
     if (!token) {
-      setStatus('error');
-      setMessage('Missing approval token.');
+      if (typeof window !== 'undefined') {
+        const hasQuery = window.location.search.includes('token=');
+        if (!hasQuery) {
+          setStatus('error');
+          setMessage('Missing approval token.');
+        }
+      }
       return;
     }
 
@@ -54,13 +62,5 @@ function ResetPasswordApproveContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ResetPasswordApprovePage() {
-  return (
-    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading approval page...</div>}>
-      <ResetPasswordApproveContent />
-    </Suspense>
   );
 }

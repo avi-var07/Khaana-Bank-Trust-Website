@@ -1,18 +1,26 @@
 'use client';
-import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-function ApproveContent() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+export default function ApprovePage() {
+  const [token, setToken] = useState('');
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('Processing approval...');
   const [email, setEmail] = useState('');
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setToken(params.get('token') || '');
+  }, []);
+
+  useEffect(() => {
     if (!token) {
-      setStatus('error');
-      setMessage('No approval token provided');
+      if (typeof window !== 'undefined') {
+        const hasQuery = window.location.search.includes('token=');
+        if (!hasQuery) {
+          setStatus('error');
+          setMessage('No approval token provided');
+        }
+      }
       return;
     }
 
@@ -68,13 +76,5 @@ function ApproveContent() {
         )}
       </div>
     </div>
-  );
-}
-
-export default function ApprovePage() {
-  return (
-    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading approval page...</div>}>
-      <ApproveContent />
-    </Suspense>
   );
 }
