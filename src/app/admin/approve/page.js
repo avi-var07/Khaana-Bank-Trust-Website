@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function ApprovePage() {
+function ApproveContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [status, setStatus] = useState('loading');
@@ -68,5 +68,13 @@ export default function ApprovePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ApprovePage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading approval page...</div>}>
+      <ApproveContent />
+    </Suspense>
   );
 }
