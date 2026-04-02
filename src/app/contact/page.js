@@ -1,7 +1,49 @@
 'use client';
+import { useState } from 'react';
 import DeveloperCard from '@/components/DeveloperCard';
 
 export default function ContactPage() {
+  const [sending, setSending] = useState(false);
+  const [formMsg, setFormMsg] = useState('');
+  const [formErr, setFormErr] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormMsg('');
+    setFormErr('');
+
+    const form = e.currentTarget;
+    const payload = {
+      fullName: form.fullName.value.trim(),
+      phone: form.phone.value.trim(),
+      email: form.email.value.trim(),
+      subject: form.subject.value,
+      message: form.message.value.trim(),
+    };
+
+    setSending(true);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setFormErr(data.error || 'Failed to send message.');
+        return;
+      }
+
+      setFormMsg('Message sent successfully. We will contact you soon.');
+      form.reset();
+    } catch {
+      setFormErr('Unable to send message right now. Please try again later.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className="contact-page">
       <section className="page-header">
@@ -65,24 +107,24 @@ export default function ContactPage() {
 
             <div className="contact-form-container glass-card">
               <h3>Send us a Message</h3>
-              <form className="contact-form">
+              <form className="contact-form" onSubmit={handleSubmit}>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Full Name</label>
-                    <input type="text" placeholder="Your Name" required />
+                    <input type="text" name="fullName" placeholder="Your Name" required />
                   </div>
                   <div className="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" placeholder="+91 00000 00000" required />
+                    <input type="tel" name="phone" placeholder="+91 00000 00000" required />
                   </div>
                 </div>
                 <div className="form-group">
                   <label>Email Address</label>
-                  <input type="email" placeholder="example@email.com" required />
+                  <input type="email" name="email" placeholder="example@email.com" required />
                 </div>
                 <div className="form-group">
                   <label>Subject</label>
-                  <select required>
+                  <select name="subject" required>
                     <option value="">Choose an option</option>
                     <option value="donation">Donation Support</option>
                     <option value="internship">Join as Intern</option>
@@ -93,9 +135,11 @@ export default function ContactPage() {
                 </div>
                 <div className="form-group">
                   <label>Your Message</label>
-                  <textarea rows="5" placeholder="How can we help you?"></textarea>
+                  <textarea name="message" rows="5" placeholder="How can we help you?" required></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary">Send Message</button>
+                {formErr && <p style={{ color: 'var(--blood)', marginBottom: '12px' }}>{formErr}</p>}
+                {formMsg && <p style={{ color: '#15803d', marginBottom: '12px' }}>{formMsg}</p>}
+                <button type="submit" className="btn btn-primary" disabled={sending}>{sending ? 'Sending...' : 'Send Message'}</button>
               </form>
             </div>
           </div>
