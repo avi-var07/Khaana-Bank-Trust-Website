@@ -13,6 +13,15 @@ export default function AdminDashboard() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [notifyingEventId, setNotifyingEventId] = useState(null);
+  const [account, setAccount] = useState({ email: '', phone: '', role: '' });
+  const [phoneInput, setPhoneInput] = useState('');
+  const [accountBusy, setAccountBusy] = useState(false);
+  const [resetOtp, setResetOtp] = useState('');
+  const [resetOtpSent, setResetOtpSent] = useState(false);
+  const [resetOtpVerified, setResetOtpVerified] = useState(false);
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const abortControllerRef = useRef(null);
   const router = useRouter();
 
@@ -46,8 +55,119 @@ export default function AdminDashboard() {
       const eventRes = await fetch('/api/admin/events');
       const eventData = await eventRes.json();
       setEvents(Array.isArray(eventData) ? eventData : []);
+
+      const accountRes = await fetch('/api/admin/account');
+      const accountData = await accountRes.json();
+      if (accountRes.ok) {
+        setAccount(accountData);
+        setPhoneInput(accountData.phone || '');
+      }
     } catch (err) {
       console.error('Fetch error:', err);
+    }
+  };
+
+  const updatePhoneNumber = async () => {
+    setAccountBusy(true);
+    try {
+      const res = await fetch('/api/admin/account', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to update phone number');
+        return;
+      }
+      alert('Phone number updated successfully');
+      setAccount((prev) => ({ ...prev, phone: phoneInput }));
+    } catch {
+      alert('Unable to update phone number right now');
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
+  const sendResetOtp = async () => {
+    setAccountBusy(true);
+    try {
+      const res = await fetch('/api/admin/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: account.email, purpose: 'admin-account-reset' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to send OTP');
+        return;
+      }
+      setResetOtpSent(true);
+      alert('OTP sent to your admin email');
+    } catch {
+      alert('Unable to send OTP right now');
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
+  const verifyResetOtp = async () => {
+    setAccountBusy(true);
+    try {
+      const res = await fetch('/api/admin/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: account.email, otp: resetOtp, purpose: 'admin-account-reset' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Invalid OTP');
+        return;
+      }
+      setResetOtpVerified(true);
+      setResetToken(data.verificationToken);
+      alert('OTP verified successfully');
+    } catch {
+      alert('Unable to verify OTP right now');
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
+  const resetPasswordWithOtp = async () => {
+    if (newPassword.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    setAccountBusy(true);
+    try {
+      const res = await fetch('/api/admin/account/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword, verificationToken: resetToken }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Password reset failed');
+        return;
+      }
+
+      setResetOtp('');
+      setResetOtpSent(false);
+      setResetOtpVerified(false);
+      setResetToken('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      alert('Password reset successful');
+    } catch {
+      alert('Unable to reset password right now');
+    } finally {
+      setAccountBusy(false);
     }
   };
 
@@ -152,13 +272,14 @@ export default function AdminDashboard() {
         <nav>
           <button className={activeTab === 'events' ? 'active' : ''} onClick={() => setActiveTab('events')}>Manage Events</button>
           <button className={activeTab === 'subs' ? 'active' : ''} onClick={() => setActiveTab('subs')}>Subscribers</button>
+          <button className={activeTab === 'account' ? 'active' : ''} onClick={() => setActiveTab('account')}>Account</button>
           <button onClick={logout} className="logout">Logout</button>
         </nav>
       </div>
 
       <main className="admin-main">
         <header className="admin-header">
-          <h1>{activeTab === 'events' ? 'Event Management' : 'Subscriber List'}</h1>
+          <h1>{activeTab === 'events' ? 'Event Management' : activeTab === 'subs' ? 'Subscriber List' : 'Account Settings'}</h1>
           <p>Logged in as Administrator</p>
         </header>
 
@@ -258,7 +379,7 @@ export default function AdminDashboard() {
               </div>
             </section>
           </div>
-        ) : (
+        ) : activeTab === 'subs' ? (
           <div className="subs-content glass-card fade-in">
             <table className="admin-table">
               <thead>
@@ -280,6 +401,86 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : (
+          <div className="glass-card fade-in" style={{ padding: '30px', maxWidth: '760px' }}>
+            <h3 style={{ marginBottom: '18px' }}>Profile</h3>
+            <p style={{ marginBottom: '8px' }}><strong>Email:</strong> {account.email}</p>
+            <p style={{ marginBottom: '20px' }}><strong>Role:</strong> {account.role}</p>
+
+            <div style={{ marginBottom: '26px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Phone Number</label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="text"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="Enter phone number"
+                  style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
+                />
+                <button className="btn btn-secondary" onClick={updatePhoneNumber} disabled={accountBusy}>
+                  Update Phone
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '26px' }}>
+              <h3 style={{ marginBottom: '12px' }}>Password Reset Through OTP</h3>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <input
+                  type="text"
+                  value={resetOtp}
+                  onChange={(e) => setResetOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
+                  disabled={!resetOtpSent || resetOtpVerified}
+                />
+                <button className="btn btn-secondary" onClick={sendResetOtp} disabled={accountBusy || resetOtpVerified}>
+                  {resetOtpSent ? 'Resend OTP' : 'Send OTP'}
+                </button>
+              </div>
+
+              <button
+                className="btn btn-secondary"
+                onClick={verifyResetOtp}
+                disabled={accountBusy || !resetOtpSent || resetOtpVerified}
+                style={{ marginBottom: '12px' }}
+              >
+                {resetOtpVerified ? 'OTP Verified' : 'Verify OTP'}
+              </button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="New password"
+                  style={{ border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
+                />
+                <input
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Retype new password"
+                  style={{ border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
+                />
+              </div>
+
+              <button
+                className="btn btn-primary"
+                onClick={resetPasswordWithOtp}
+                disabled={accountBusy || !resetOtpVerified}
+                style={{ marginTop: '12px' }}
+              >
+                Reset Password
+              </button>
+            </div>
+
+            <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
+              <button className="btn btn-danger" onClick={logout} style={{ background: '#dc2626', color: '#fff' }}>
+                Logout
+              </button>
+            </div>
           </div>
         )}
       </main>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function AdminForgotPasswordPage() {
@@ -12,8 +12,39 @@ export default function AdminForgotPasswordPage() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
   const [loading, setLoading] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [otpCooldownSec, setOtpCooldownSec] = useState(0);
+  const [otpBlockSec, setOtpBlockSec] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (otpCooldownSec <= 0 && otpBlockSec <= 0) return;
+
+    const timer = setInterval(() => {
+      setOtpCooldownSec((prev) => (prev > 0 ? prev - 1 : 0));
+      setOtpBlockSec((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [otpCooldownSec, otpBlockSec]);
+
+  const formatTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    if (m <= 0) return `${s}s`;
+    return `${m}m ${s}s`;
+  };
+
+  const otpButtonLabel = otpVerified
+    ? 'Verified'
+    : otpBlockSec > 0
+      ? `Try after ${formatTime(otpBlockSec)}`
+      : otpCooldownSec > 0
+        ? 'Sent'
+        : otpSent
+          ? 'Resend OTP'
+          : 'Send OTP';
 
   const sendOtp = async () => {
     setError('');
@@ -24,7 +55,7 @@ export default function AdminForgotPasswordPage() {
       return;
     }
 
-    setLoading(true);
+    setOtpBusy(true);
     try {
       const res = await fetch('/api/admin/otp/send', {
         method: 'POST',
@@ -34,16 +65,20 @@ export default function AdminForgotPasswordPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data?.retryAfterSec) {
+          setOtpBlockSec(data.retryAfterSec);
+        }
         setError(data.error || 'Failed to send OTP');
         return;
       }
 
       setOtpSent(true);
+      setOtpCooldownSec(60);
       setMessage('OTP sent to your email.');
     } catch {
       setError('Unable to send OTP right now.');
     } finally {
-      setLoading(false);
+      setOtpBusy(false);
     }
   };
 
@@ -56,7 +91,7 @@ export default function AdminForgotPasswordPage() {
       return;
     }
 
-    setLoading(true);
+    setOtpBusy(true);
     try {
       const res = await fetch('/api/admin/otp/verify', {
         method: 'POST',
@@ -76,7 +111,7 @@ export default function AdminForgotPasswordPage() {
     } catch {
       setError('Unable to verify OTP right now.');
     } finally {
-      setLoading(false);
+      setOtpBusy(false);
     }
   };
 
@@ -141,6 +176,7 @@ export default function AdminForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={otpBusy}
                 style={{ width: '100%', padding: '12px', border: '2px solid #eee', borderRadius: '8px' }}
               />
             </div>
@@ -152,10 +188,15 @@ export default function AdminForgotPasswordPage() {
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="Enter OTP"
                 style={{ flex: 1, padding: '12px', border: '2px solid #eee', borderRadius: '8px' }}
-                disabled={!otpSent || otpVerified}
+                disabled={!otpSent || otpVerified || otpBusy}
               />
-              <button type="button" className="btn btn-secondary" onClick={sendOtp} disabled={loading || otpVerified}>
-                {otpSent ? 'Resend OTP' : 'Send OTP'}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={sendOtp}
+                disabled={loading || otpBusy || otpVerified || otpCooldownSec > 0 || otpBlockSec > 0}
+              >
+                {otpButtonLabel}
               </button>
             </div>
 
@@ -163,10 +204,10 @@ export default function AdminForgotPasswordPage() {
               type="button"
               className="btn btn-secondary"
               onClick={verifyOtp}
-              disabled={loading || !otpSent || otpVerified}
+              disabled={loading || otpBusy || !otpSent || otpVerified}
               style={{ width: '100%', marginBottom: '16px' }}
             >
-              {otpVerified ? 'Email Verified' : 'Verify OTP'}
+              {otpVerified ? 'Verified' : 'Verify OTP'}
             </button>
 
             <div style={{ marginBottom: '16px' }}>
@@ -176,6 +217,7 @@ export default function AdminForgotPasswordPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                disabled={otpBusy}
                 style={{ width: '100%', padding: '12px', border: '2px solid #eee', borderRadius: '8px' }}
               />
             </div>
@@ -187,6 +229,7 @@ export default function AdminForgotPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={otpBusy}
                 style={{ width: '100%', padding: '12px', border: '2px solid #eee', borderRadius: '8px' }}
               />
             </div>
@@ -194,7 +237,7 @@ export default function AdminForgotPasswordPage() {
             {error && <p style={{ color: 'var(--blood)', marginBottom: '12px' }}>{error}</p>}
             {message && <p style={{ color: '#15803d', marginBottom: '12px' }}>{message}</p>}
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || !otpVerified}>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || otpBusy || !otpVerified}>
               {loading ? 'Submitting...' : 'Send Reset Request'}
             </button>
           </form>

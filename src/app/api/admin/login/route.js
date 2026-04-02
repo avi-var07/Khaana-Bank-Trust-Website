@@ -26,27 +26,23 @@ export async function POST(request) {
       );
     }
 
-    // Check primary admin
-    if (email === adminEmail && password === adminPassword) {
-      const token = createSessionToken(adminEmail);
-      const cookie = getSessionCookieConfig();
-      const response = NextResponse.json({ message: 'Login successful' });
-      response.cookies.set(cookie.name, token, cookie.options);
-      return response;
-    }
-
-    // Check approved secondary admins
     try {
       const admins = await readDB('admins.json');
-      const admin = admins.find(a => a.email === email && a.status === 'approved');
-
-      if (!admin) {
-        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
-      }
-
       const hashedPassword = hashPassword(password);
-      if (admin.passwordHash !== hashedPassword) {
-        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+
+      if (email === adminEmail) {
+        const primaryFromFile = admins.find(a => a.email === email);
+        const isEnvMatch = password === adminPassword;
+        const isFileMatch = !!primaryFromFile?.passwordHash && primaryFromFile.passwordHash === hashedPassword;
+
+        if (!isEnvMatch && !isFileMatch) {
+          return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+        }
+      } else {
+        const admin = admins.find(a => a.email === email && (a.status === 'approved' || a.status === 'primary'));
+        if (!admin || admin.passwordHash !== hashedPassword) {
+          return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+        }
       }
 
       const token = createSessionToken(email);
@@ -55,7 +51,14 @@ export async function POST(request) {
       response.cookies.set(cookie.name, token, cookie.options);
       return response;
     } catch (dbErr) {
-      // If admins.json doesn't exist or has issues, primary admin still works
+      if (email === adminEmail && password === adminPassword) {
+        const token = createSessionToken(adminEmail);
+        const cookie = getSessionCookieConfig();
+        const response = NextResponse.json({ message: 'Login successful' });
+        response.cookies.set(cookie.name, token, cookie.options);
+        return response;
+      }
+
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
   } catch (err) {

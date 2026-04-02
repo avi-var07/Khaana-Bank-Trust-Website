@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "email": "khaanabanktrust@gmail.com",
+    "purpose": "admin-reset",
+    "otpHash": "4fb656e9cd8612b54de5a2976e4f2f94e100f482eea724a5bbdbd1da320084ed",
+    "createdAt": 1775161577040,
+    "expiresAt": 1775162177040,
+    "used": true,
+    "attempts": 1,
+    "verifiedAt": 1775161606668
+  },
+  {
+    "email": "aviralvarshney07@gmail.com",
+    "purpose": "admin-join",
+    "otpHash": "d37df657a646b692787723d49fedfff1be71b0aa35b0a968765a41a40d10416d",
+    "createdAt": 1775160954940,
+    "expiresAt": 1775161554940,
+    "used": false,
+    "attempts": 0
+  }
+]

@@ -19,6 +19,24 @@ function sign(value) {
   return crypto.createHmac('sha256', getSecret()).update(value).digest('base64url');
 }
 
+function getSessionPayload(token) {
+  if (!token || !token.includes('.')) return null;
+
+  const [encoded, signature] = token.split('.');
+  if (!encoded || !signature) return null;
+
+  const expected = sign(encoded);
+  if (expected !== signature) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
+    if (!payload?.email || !payload?.exp || Date.now() > payload.exp) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export function createSessionToken(email) {
   const payload = {
     email,
@@ -30,21 +48,7 @@ export function createSessionToken(email) {
 }
 
 export function verifySessionToken(token) {
-  if (!token || !token.includes('.')) return false;
-
-  const [encoded, signature] = token.split('.');
-  if (!encoded || !signature) return false;
-
-  const expected = sign(encoded);
-  if (expected !== signature) return false;
-
-  try {
-    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
-    if (!payload?.exp || Date.now() > payload.exp) return false;
-    return payload.email === getAdminEmail();
-  } catch {
-    return false;
-  }
+  return !!getSessionPayload(token);
 }
 
 export function getSessionCookieConfig() {
@@ -64,4 +68,10 @@ export function getSessionCookieConfig() {
 export function isAdminAuthenticated(request) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   return verifySessionToken(token);
+}
+
+export function getAuthenticatedAdminEmail(request) {
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const payload = getSessionPayload(token);
+  return payload?.email || null;
 }

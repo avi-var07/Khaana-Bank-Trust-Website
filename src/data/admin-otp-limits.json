@@ -1,0 +1,11 @@
+[
+  {
+    "key": "khaanabanktrust@gmail.com::admin-reset",
+    "email": "khaanabanktrust@gmail.com",
+    "purpose": "admin-reset",
+    "attemptsInWindow": 1,
+    "windowLevel": 0,
+    "blockedUntil": 0,
+    "lastSentAt": 1775161577028
+  }
+]
