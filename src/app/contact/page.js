@@ -117,10 +117,11 @@ export default function ContactPage() {
                 name="Prashant Kumar Jha"
                 designation="QA Engineer"
                 description="Prashant Kumar Jha is a dedicated developer who focuses on building practical and user-friendly web applications. He works on both frontend and backend development, creating scalable and efficient systems. He is passionate about problem-solving, learning new technologies, and developing software that solves real-world problems."
-                email="prashantjha.dev@gmail.com"
-                github="https://github.com/prashant-jha"
-                linkedin="https://linkedin.com/in/prashant-jha"
+                email="jhaprashant9354@gmail.com"
+                github="https://github.com/prashantjha03"
+                linkedin="https://www.linkedin.com/in/prashantjha03/"
                 photoPath="/images/Jhaaan.png"
+                photoPosition="center 12%"
               />
             </div>
           </div>
