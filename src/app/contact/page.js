@@ -1,77 +1,127 @@
 'use client';
+import DeveloperCard from '@/components/DeveloperCard';
+
 export default function ContactPage() {
   return (
     <div className="contact-page">
       <section className="page-header">
         <div className="container">
-          <h1>Contact Us</h1>
-          <p>Get in touch with the team behind Khaana Bank Trust.</p>
+          <h1>Get In Touch</h1>
+          <p>We'd love to hear from you. Let's work together to make a difference.</p>
         </div>
       </section>
 
       <section className="section">
         <div className="container">
-          <div className="grid-2">
-            <div className="contact-info">
-              <div className="info-section">
-                <h3>Our Founders</h3>
-                <div className="contact-card glass-card">
-                  <p><strong>Mr. Ankit Tripathi</strong></p>
-                  <p className="founder-contact">
-                    <a href="https://wa.me/918840775823" style={{color: '#25D366', fontWeight: 'bold'}}>
-                      📞/💬 +91 8840775823 (WhatsApp)
-                    </a>
-                  </p>
-                </div>
+          <div className="contact-info-grid">
+            <div className="info-card glass-card">
+              <div className="icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
               </div>
-
-              <div className="info-section" style={{ marginTop: '40px' }}>
-                <h3>Website Developers</h3>
-                <div className="contact-card glass-card">
-                  <p><strong>Aviral Ved Prakash Varshney</strong></p>
-                  <p>📧 aviralvarshney07@gmail.com</p>
-                  <p>🌐 portfolio-link.com</p>
-                </div>
+              <h4>Call/WhatsApp</h4>
+              <p><a href="https://wa.me/918840775823">+91 8840775823</a></p>
+            </div>
+            <div className="info-card glass-card">
+              <div className="icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
               </div>
+              <h4>Email Us</h4>
+              <p>khaanbanktrust@gmail.com</p>
+            </div>
+            <div className="info-card glass-card">
+              <div className="icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              </div>
+              <h4>Visit Us</h4>
+              <p>Varanasi, Uttar Pradesh, India</p>
+            </div>
+          </div>
 
-              <div className="social-cta" style={{ marginTop: '60px' }}>
-                 <h3>Report an Issue</h3>
-                 <p>Found a bug on the website? Please let us know using the "Report a Bug" option in the form.</p>
+          <div className="main-grid">
+            <div className="left-content">
+              <div className="person-section">
+                <h3>Our Founder</h3>
+                <div className="person-card glass-card">
+                  <div className="person-inner">
+                    <div className="founder-photo-wrap">
+                      <img
+                        src="/images/Ankit%20Bhaiya.png"
+                        alt="Mr. Ankit Tripathi"
+                        className="founder-photo"
+                      />
+                    </div>
+                    <div className="person-info">
+                      <h5>Mr. Ankit Tripathi</h5>
+                      <span className="person-role">Founder / Managing Trustee</span>
+                      <p>Leading the mission to ensure no one sleeps hungry in our city.</p>
+                      <a href="https://wa.me/918840775823" className="whatsapp-btn">
+                        Connect on WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="contact-form-container glass-card fade-in">
-              <h3>Get In Touch</h3>
+            <div className="contact-form-container glass-card">
+              <h3>Send us a Message</h3>
               <form className="contact-form">
-                <div className="form-group">
-                  <label>Full Name</label>
-                  <input type="text" placeholder="Donor Name" required />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Full Name</label>
+                    <input type="text" placeholder="Your Name" required />
+                  </div>
+                  <div className="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" placeholder="+91 00000 00000" required />
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>Email Address</label>
-                  <input type="email" placeholder="khaanbanktrust@gmail.com" required />
-                </div>
-                <div className="form-group">
-                  <label>Phone Number</label>
-                  <input type="tel" placeholder="+91 8840775823" required />
+                  <input type="email" placeholder="example@email.com" required />
                 </div>
                 <div className="form-group">
                   <label>Subject</label>
                   <select required>
-                    <option value="">Select a subject</option>
-                    <option value="general">General Inquiry</option>
+                    <option value="">Choose an option</option>
                     <option value="donation">Donation Support</option>
                     <option value="internship">Join as Intern</option>
                     <option value="partnership">Partnership Inquiry</option>
                     <option value="bug">Report a Bug 🐞</option>
+                    <option value="other">General Inquiry</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Message</label>
+                  <label>Your Message</label>
                   <textarea rows="5" placeholder="How can we help you?"></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Send Message</button>
+                <button type="submit" className="btn btn-primary">Send Message</button>
               </form>
+            </div>
+          </div>
+
+          <div className="developers-section">
+            <h3>Website Developers</h3>
+            <div className="dev-grid-new">
+              <DeveloperCard
+                name="Aviral Ved Prakash Varshney"
+                designation="Lead Full Stack Developer"
+                description="Aviral Ved Prakash Varshney is a Full Stack Developer specializing in Java and React, focused on building scalable web applications and real-world software solutions. Passionate about problem-solving, backend development, and creating technology that makes a meaningful impact."
+                email="aviralvarshney07@gmail.com"
+                github="https://github.com/aviralvarshney07"
+                linkedin="https://linkedin.com/in/aviralvarshney07"
+                photoPath="/images/Aviral.png"
+                photoPosition="center 12%"
+              />
+              <DeveloperCard
+                name="Prashant Kumar Jha"
+                designation="QA Engineer"
+                description="Prashant Kumar Jha is a dedicated developer who focuses on building practical and user-friendly web applications. He works on both frontend and backend development, creating scalable and efficient systems. He is passionate about problem-solving, learning new technologies, and developing software that solves real-world problems."
+                email="prashantjha.dev@gmail.com"
+                github="https://github.com/prashant-jha"
+                linkedin="https://linkedin.com/in/prashant-jha"
+                photoPath="/images/Jhaaan.png"
+              />
             </div>
           </div>
         </div>
@@ -79,49 +129,193 @@ export default function ContactPage() {
 
       <style jsx>{`
         .page-header {
-          padding: 80px 0;
-          background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1523966211575-eb4a01e7dd51?q=80&w=2020') center/cover;
+          padding: 120px 0 80px;
+          background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=2074') center/cover;
           color: white;
           text-align: center;
+          clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
         }
 
-        .page-header h1 { font-size: 3.5rem; margin-bottom: 10px; }
-        .page-header p { font-size: 1.2rem; opacity: 0.9; }
+        .page-header h1 { font-size: 4rem; margin-bottom: 15px; }
+        .page-header p { font-size: 1.25rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
 
-        .section { padding: var(--section-padding); }
+        .section { padding: 80px 0; }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+        .contact-info-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 30px;
+          margin-bottom: 80px;
+        }
 
-        .contact-card { padding: 25px; margin-top: 15px; }
-        .contact-card p { margin-bottom: 8px; font-size: 1.1rem; }
+        .info-card {
+          text-align: center;
+          padding: 40px 30px;
+          transition: var(--transition);
+          border-bottom: 4px solid transparent;
+        }
 
-        .contact-form-container { padding: 40px; border-top: 5px solid var(--primary); }
-        .contact-form-container h3 { margin-bottom: 30px; font-size: 1.6rem; }
+        .info-card:hover {
+          transform: translateY(-10px);
+          border-color: var(--primary);
+        }
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        .icon-box {
+          width: 60px;
+          height: 60px;
+          background: rgba(255, 112, 67, 0.1);
+          color: var(--primary);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 20px;
+        }
+
+        .icon-box svg { width: 30px; height: 30px; }
+        .info-card h4 { font-size: 1.4rem; margin-bottom: 10px; }
+        .info-card p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .main-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          gap: 60px;
+          align-items: start;
+          margin-bottom: 64px;
+        }
+
+        .person-section h3 { margin-bottom: 25px; font-size: 1.8rem; }
+        
+        .person-card {
+          padding: 30px;
+          border-left: 5px solid var(--primary);
+        }
+
+        .person-inner {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+
+        .founder-photo-wrap {
+          width: 130px;
+          height: 130px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 5px solid rgba(255, 112, 67, 0.2);
+          flex-shrink: 0;
+          background: #fff;
+        }
+
+        .founder-photo {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 24%;
+        }
+
+        .person-info h5 { font-size: 1.4rem; margin-bottom: 5px; }
+        .person-role { 
+          display: inline-block;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          color: var(--primary);
+          font-weight: 700;
+          letter-spacing: 1px;
+          margin-bottom: 15px;
+        }
+        
+        .whatsapp-btn {
+          display: inline-block;
+          margin-top: 20px;
+          padding: 10px 20px;
+          background: #25D366;
+          color: white;
+          border-radius: 50px;
+          font-weight: 700;
+          font-size: 0.9rem;
+          transition: var(--transition);
+        }
+
+        .whatsapp-btn:hover {
+          background: #128C7E;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .developers-section h3 {
+          margin-bottom: 25px;
+          font-size: 1.8rem;
+        }
+
+        .dev-grid-new {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 30px;
+        }
+
+        .contact-form-container {
+          padding: 50px;
+          background: white;
+          box-shadow: var(--shadow-lg);
+        }
+
+        .contact-form-container h3 { font-size: 2rem; margin-bottom: 35px; }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 700; font-size: 0.95rem; }
         
         .form-group input, 
         .form-group select, 
         .form-group textarea {
           width: 100%;
-          padding: 12px 15px;
-          border: 2px solid #eee;
-          border-radius: 8px;
+          padding: 15px;
+          border: 2px solid #f0f0f0;
+          border-radius: 12px;
           outline: none;
           font-family: inherit;
+          font-size: 1rem;
           transition: var(--transition);
+          background: #fafafa;
         }
 
         .form-group input:focus, 
         .form-group select:focus, 
         .form-group textarea:focus {
           border-color: var(--primary);
+          background: white;
+          box-shadow: 0 0 0 4px rgba(255, 112, 67, 0.1);
         }
 
-        @media (max-width: 992px) {
-          .grid-2 { grid-template-columns: 1fr; gap: 60px; }
+        .submit-btn { width: 100%; padding: 18px; font-size: 1.1rem; }
+
+        @media (max-width: 1100px) {
+          .contact-info-grid { grid-template-columns: 1fr 1fr; }
+          .main-grid { grid-template-columns: 1fr; gap: 50px; }
+          .dev-grid-new { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+          .page-header h1 { font-size: 3rem; }
+          .contact-info-grid { grid-template-columns: 1fr; }
+          .form-row { grid-template-columns: 1fr; }
           .contact-form-container { padding: 30px 20px; }
+          .dev-grid-new { gap: 24px; }
+          .person-inner {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .founder-photo-wrap {
+            width: 110px;
+            height: 110px;
+          }
         }
       `}</style>
     </div>

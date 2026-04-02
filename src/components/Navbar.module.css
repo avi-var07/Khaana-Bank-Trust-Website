@@ -1,5 +1,5 @@
 .navbar {
-  height: var(--header-height);
+  height: 90px;
   background: var(--glass);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -11,16 +11,17 @@
   z-index: 1000;
   display: flex;
   align-items: center;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 96%;
-  max-width: 1540px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 10px;
+  padding: 0 28px;
 }
 
 .logo {
@@ -32,14 +33,14 @@
 }
 
 .navLogo {
-  height: 48px;
+  height: 56px;
   width: auto;
   object-fit: contain;
 }
 
 .logoText {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.5px;
@@ -60,12 +61,12 @@
 
 .navLinks {
   display: flex;
-  gap: 35px;
+  gap: 22px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   flex: 1;
   justify-content: center;
-  margin: 0 40px;
+  margin: 0 20px;
 }
 
 .navLinks a {
@@ -97,33 +98,71 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .supportBtn {
-  padding: 10px 22px;
+  padding: 10px 20px;
   font-weight: 700;
   border-radius: 50px;
   border: 2px solid var(--primary);
   color: var(--primary);
   background: transparent;
   transition: var(--transition);
-  font-size: 0.9rem;
+  font-size: 0.96rem;
+  overflow: hidden;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+  position: relative;
+  cursor: pointer;
+  line-height: 1;
 }
 
 .supportBtn:hover {
   background: var(--primary);
   color: white;
+  box-shadow: 0 8px 24px rgba(255, 112, 67, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 112, 67, 0.2);
+}
+
+.supportTextPrimary,
+.supportTextHover {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  white-space: nowrap;
+}
+
+.supportTextPrimary {
+  opacity: 1;
+}
+
+.supportTextHover {
+  opacity: 0;
+  transform: translate(-50%, -35%);
+}
+
+.supportBtn:hover .supportTextPrimary {
+  opacity: 0;
+  transform: translate(-50%, -65%);
+}
+
+.supportBtn:hover .supportTextHover {
+  opacity: 1;
+  transform: translate(-50%, -50%);
 }
 
 .subscribeBtn {
-  padding: 12px 28px;
+  padding: 10px 20px;
   font-weight: 700;
   border-radius: 50px;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
   background: var(--primary);
   color: white;
   border: none;
@@ -138,8 +177,14 @@
 }
 
 @media (max-width: 1200px) {
-  .navLinks { gap: 15px; font-size: 0.85rem; }
-  .logoText { font-size: 1.3rem; }
+  .container { padding: 0 20px; }
+  .navLinks { gap: 14px; font-size: 0.9rem; margin: 0 10px; }
+  .logoText { font-size: 1.6rem; }
+  .supportBtn,
+  .subscribeBtn {
+    padding: 9px 14px;
+    min-width: 104px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -147,3 +192,87 @@
     display: none; 
   }
 }
+
+  @media (max-width: 768px) {
+    .navbar {
+      height: 75px;
+      padding: 0 20px;
+    }
+  
+    .container {
+      padding: 0 15px;
+      gap: 10px;
+    }
+  
+    .logo {
+      gap: 8px;
+    }
+  
+    .navLogo {
+      height: 40px;
+    }
+  
+    .logoText {
+      font-size: 1.3rem;
+    }
+  
+    .subLogo {
+      font-size: 0.6rem;
+    }
+  
+    .actions {
+      gap: 10px;
+    }
+  
+    .supportBtn {
+      padding: 10px 18px;
+      font-size: 0.8rem;
+      height: 42px;
+      min-width: 110px;
+    }
+  
+    .subscribeBtn {
+      padding: 10px 18px;
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .navbar {
+      height: 70px;
+    }
+  
+    .container {
+      padding: 0 10px;
+    }
+  
+    .navLogo {
+      height: 35px;
+    }
+  
+    .logoText {
+      font-size: 1.1rem;
+      letter-spacing: -1px;
+    }
+  
+    .subLogo {
+      display: none;
+    }
+  
+    .actions {
+      gap: 8px;
+    }
+  
+    .supportBtn {
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      height: 38px;
+      min-width: 90px;
+    }
+  
+    .subscribeBtn {
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      display: none;
+    }
+  }
