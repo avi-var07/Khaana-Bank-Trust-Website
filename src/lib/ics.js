@@ -10,7 +10,7 @@ export function generateICS(eventData) {
     title,
     description,
     location,
-    url: 'https://Khaanabank.org',
+    url: 'https://khaanabanktrust.vercel.app/',
     status: 'CONFIRMED',
     busyStatus: 'BUSY',
   };

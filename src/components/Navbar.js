@@ -29,6 +29,9 @@ const Navbar = () => {
           </div>
 
           <div className={styles.actions}>
+            <Link href="/admin/login" className={`${styles.supportBtn} btn-secondary-sm`}>
+              Admin
+            </Link>
             <Link href="/support" className={`${styles.supportBtn} btn-secondary-sm`}>
               <span className={styles.supportTextPrimary}>Support Us</span>
               <span className={styles.supportTextHover}>Donate Us</span>

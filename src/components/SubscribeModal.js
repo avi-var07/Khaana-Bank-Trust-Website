@@ -5,12 +5,14 @@ import styles from './SubscribeModal.module.css';
 const SubscribeModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
+  const [errorMessage, setErrorMessage] = useState('Something went wrong. Please try again.');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
+    setErrorMessage('Something went wrong. Please try again.');
     
     try {
       const res = await fetch('/api/subscribe', {
@@ -27,9 +29,12 @@ const SubscribeModal = ({ isOpen, onClose }) => {
           setFormData({ name: '', email: '', phone: '' });
         }, 2000);
       } else {
+        const payload = await res.json().catch(() => ({}));
+        setErrorMessage(payload.error || 'Subscription failed. Please try again.');
         setStatus('error');
       }
     } catch (err) {
+      setErrorMessage(err.message || 'Network error. Please try again.');
       setStatus('error');
     }
   };
@@ -41,9 +46,15 @@ const SubscribeModal = ({ isOpen, onClose }) => {
         
         {status === 'success' ? (
           <div className={styles.successMessage}>
+            <div className={styles.confettiLayer} aria-hidden="true">
+              {[...Array(20)].map((_, idx) => (
+                <span key={idx} className={styles.confettiPiece}></span>
+              ))}
+            </div>
             <div className={styles.successIcon}>🎉</div>
             <h3>Thank You for Subscribing!</h3>
             <p>You'll now receive updates about our upcoming events and initiatives.</p>
+            <p className={styles.successSubtext}>A welcome email is on its way to your inbox.</p>
           </div>
         ) : (
           <>
@@ -89,7 +100,7 @@ const SubscribeModal = ({ isOpen, onClose }) => {
               >
                 {status === 'loading' ? 'Subscribing...' : 'Subscribe Now'}
               </button>
-              {status === 'error' && <p className={styles.error}>Something went wrong. Please try again.</p>}
+              {status === 'error' && <p className={styles.error}>{errorMessage}</p>}
             </form>
           </>
         )}

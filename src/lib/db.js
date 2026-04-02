@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const DATA_DIR = path.join(process.cwd(), 'src/data');
+const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'src/data');
 
 export async function readDB(filename) {
   try {
@@ -16,5 +16,6 @@ export async function readDB(filename) {
 
 export async function writeDB(filename, data) {
   const filePath = path.join(DATA_DIR, filename);
+  await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(filePath, JSON.stringify(data, null, 2));
 }

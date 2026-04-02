@@ -15,11 +15,19 @@ export default function SupportPage() {
   const [view, setView] = useState('support'); // 'support' or 'donate'
   const [loading, setLoading] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
+  const [donor, setDonor] = useState({ name: '', email: '', phone: '' });
 
   const handleDonate = async (amount) => {
     const finalAmount = amount || customAmount;
-    if (!finalAmount || isNaN(finalAmount)) {
+    const parsedAmount = parseInt(finalAmount, 10);
+
+    if (!parsedAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       alert('Please enter a valid amount');
+      return;
+    }
+
+    if (!donor.name || !donor.email) {
+      alert('Please enter your name and email to receive donation acknowledgement.');
       return;
     }
 
@@ -35,7 +43,7 @@ export default function SupportPage() {
       const res = await fetch('/api/donate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: finalAmount })
+        body: JSON.stringify({ amount: parsedAmount })
       });
       
       const data = await res.json();
@@ -53,14 +61,29 @@ export default function SupportPage() {
         name: "Khaana Bank Trust",
         description: "Donation for social initiatives",
         order_id: data.id,
-        handler: function (response) {
-          alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
+        handler: async function (response) {
+          try {
+            await fetch('/api/donate/confirm', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: donor.name,
+                email: donor.email,
+                amount: parsedAmount,
+                paymentId: response.razorpay_payment_id,
+              }),
+            });
+          } catch (err) {
+            console.error('Thank-you email call failed:', err);
+          }
+
+          alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}. Thank you for your support.`);
           window.location.href = '/support?success=true';
         },
         prefill: {
-          name: "Donor",
-          email: "donor@khaanabanktrust",
-          contact: "8840775823"
+          name: donor.name,
+          email: donor.email,
+          contact: donor.phone || ""
         },
         theme: {
           color: "#ff5e14" // NGO primary color
@@ -132,6 +155,29 @@ export default function SupportPage() {
               <div className="donate-area text-center">
                 <h2>Make an Online Donation</h2>
                 <p>Fast, secure, and direct impact through Razorpay.</p>
+                <div className="donor-details">
+                  <h3>Donor Details</h3>
+                  <div className="donor-grid">
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      value={donor.name}
+                      onChange={(e) => setDonor({ ...donor, name: e.target.value })}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your Email (for receipt)"
+                      value={donor.email}
+                      onChange={(e) => setDonor({ ...donor, email: e.target.value })}
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number (optional)"
+                      value={donor.phone}
+                      onChange={(e) => setDonor({ ...donor, phone: e.target.value })}
+                    />
+                  </div>
+                </div>
                 <div className="donation-options">
                   <div className="option-card">
                     <div className="amount">₹500</div>
@@ -239,6 +285,38 @@ export default function SupportPage() {
           margin: 40px 0;
         }
 
+        .donor-details {
+          margin-top: 26px;
+          padding: 24px;
+          border: 1px solid #eee;
+          border-radius: 12px;
+          background: #fff;
+        }
+
+        .donor-details h3 {
+          margin-bottom: 14px;
+          font-size: 1.2rem;
+        }
+
+        .donor-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+
+        .donor-grid input {
+          width: 100%;
+          border: 2px solid #eee;
+          border-radius: 8px;
+          padding: 10px 12px;
+          font-family: inherit;
+          outline: none;
+        }
+
+        .donor-grid input:focus {
+          border-color: var(--primary);
+        }
+
         .option-card {
           padding: 40px 20px;
           border: 1px solid #eee;
@@ -266,6 +344,7 @@ export default function SupportPage() {
 
         @media (max-width: 992px) {
           .info-grid, .donation-options { grid-template-columns: 1fr; }
+          .donor-grid { grid-template-columns: 1fr; }
           .content-area { padding: 30px 20px; }
         }
       `}</style>

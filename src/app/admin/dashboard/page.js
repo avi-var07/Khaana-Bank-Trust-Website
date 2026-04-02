@@ -1,6 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from '@/components/SubscribeModal.module.css';
 
 export default function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -8,17 +9,32 @@ export default function AdminDashboard() {
   const [subscribers, setSubscribers] = useState([]);
   const [events, setEvents] = useState([]);
   const [newEvent, setNewEvent] = useState({ title: '', date: '', description: '', type: 'General', location: '' });
-  const [loading, setLoading] = useState(false);
+  const [creatingEvent, setCreatingEvent] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [notifyingEventId, setNotifyingEventId] = useState(null);
+  const abortControllerRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
-    const auth = localStorage.getItem('isAdmin');
-    if (auth !== 'true') {
-      router.push('/admin/login');
-    } else {
-      setIsAdmin(true);
-      fetchData();
-    }
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/admin/session');
+        const payload = await res.json();
+        if (!payload?.authenticated) {
+          router.push('/admin/login');
+          return;
+        }
+        setIsAdmin(true);
+        fetchData();
+      } catch {
+        router.push('/admin/login');
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    checkSession();
   }, []);
 
   const fetchData = async () => {
@@ -37,7 +53,7 @@ export default function AdminDashboard() {
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setCreatingEvent(true);
     try {
       const res = await fetch('/api/admin/events', {
         method: 'POST',
@@ -45,43 +61,89 @@ export default function AdminDashboard() {
         body: JSON.stringify(newEvent)
       });
       if (res.ok) {
+        const result = await res.json();
         setNewEvent({ title: '', date: '', description: '', type: 'General', location: '' });
         fetchData();
-        alert('Event created successfully!');
+        alert(`✓ Event created successfully! Email sent to ${result.emailCount || 0} subscribers.`);
       }
     } catch (err) {
       alert('Failed to create event');
     } finally {
-      setLoading(false);
+      setCreatingEvent(false);
     }
   };
 
   const handleNotify = async (eventId) => {
     if (!confirm('Are you sure you want to notify all subscribers about this event?')) return;
-    setLoading(true);
+    
+    setNotifyingEventId(eventId);
+    abortControllerRef.current = new AbortController();
+    
     try {
       const res = await fetch('/api/admin/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId })
+        body: JSON.stringify({ eventId }),
+        signal: abortControllerRef.current.signal
       });
+      
       if (res.ok) {
         const result = await res.json();
-        alert(`Notifications sent! Email: ${result.emailCount}, WhatsApp links generated.`);
+        
+        // Show confetti animation instead of alert
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 2000);
+      } else {
+        alert('Failed to send notifications');
       }
     } catch (err) {
-      alert('Notification failed');
+      if (err.name === 'AbortError') {
+        alert('Notification cancelled');
+      } else {
+        alert('Notification failed');
+      }
     } finally {
-      setLoading(false);
+      setNotifyingEventId(null);
+      abortControllerRef.current = null;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('isAdmin');
-    router.push('/admin/login');
+  const handleCancelNotify = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   };
 
-  if (!isAdmin) return <div className="p-40">Verifying Admin...</div>;
+  const handleDeleteEvent = async (eventId) => {
+    if (!confirm('Are you sure you want to delete this event? This cannot be undone.')) return;
+    
+    try {
+      const res = await fetch('/api/admin/events', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId })
+      });
+      
+      if (res.ok) {
+        alert('Event deleted successfully');
+        fetchData();
+      } else {
+        alert('Failed to delete event');
+      }
+    } catch (err) {
+      alert('Error deleting event');
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } finally {
+      router.push('/admin/login');
+    }
+  };
+
+  if (checkingSession || !isAdmin) return <div className="p-40">Verifying Admin...</div>;
 
   return (
     <div className="admin-dashboard">
@@ -137,8 +199,8 @@ export default function AdminDashboard() {
                   <label>Description</label>
                   <textarea rows="3" value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})}></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '20px' }}>
-                  {loading ? 'Processing...' : 'Create & Save Event'}
+                <button type="submit" className="btn btn-primary" disabled={creatingEvent} style={{ marginTop: '20px' }}>
+                  {creatingEvent ? 'Creating...' : 'Create & Save Event'}
                 </button>
               </form>
             </section>
@@ -148,12 +210,49 @@ export default function AdminDashboard() {
               <h3>Existing Events</h3>
               <div className="admin-list">
                 {events.length === 0 ? <p>No events found.</p> : events.map((ev, idx) => (
-                  <div key={idx} className="admin-list-item">
+                  <div key={idx} className="admin-list-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderBottom: '1px solid #eee' }}>
                     <div>
                       <strong>{ev.title}</strong>
                       <p>{ev.date} - {ev.location}</p>
                     </div>
-                    <button className="btn btn-secondary" onClick={() => handleNotify(ev.id)} disabled={loading}>Notify All</button>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      {notifyingEventId === ev.id ? (
+                        <>
+                          <button 
+                            className="btn btn-secondary" 
+                            disabled
+                            style={{ opacity: 0.6 }}
+                          >
+                            Sending...
+                          </button>
+                          <button 
+                            className="btn btn-danger" 
+                            onClick={handleCancelNotify}
+                            style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button 
+                            className="btn btn-secondary" 
+                            onClick={() => handleNotify(ev.id)}
+                            disabled={notifyingEventId !== null}
+                          >
+                            Notify All
+                          </button>
+                          <button 
+                            className="btn btn-danger" 
+                            onClick={() => handleDeleteEvent(ev.id)}
+                            disabled={notifyingEventId !== null}
+                            style={{ background: '#ef4444', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -244,6 +343,15 @@ export default function AdminDashboard() {
         .admin-table th { padding: 15px; border-bottom: 2px solid #eee; }
         .admin-table td { padding: 15px; border-bottom: 1px solid #eee; }
       `}</style>
+
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <div className={styles.confettiContainer}>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className={styles.confettiPiece}></div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

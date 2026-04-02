@@ -3,18 +3,35 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('khaanabanktrust@gmail.com');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Simplified for MVP - using a placeholder password
-    if (password === 'admin123') {
-      localStorage.setItem('isAdmin', 'true');
-      router.push('/admin/dashboard');
-    } else {
-      setError('Invalid credentials');
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.ok) {
+        router.push('/admin/dashboard');
+        return;
+      }
+
+      const payload = await res.json().catch(() => ({}));
+      setError(payload.error || 'Invalid credentials');
+    } catch {
+      setError('Unable to login right now. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,6 +44,18 @@ export default function AdminLoginPage() {
           
           <form onSubmit={handleLogin}>
             <div className="form-group" style={{ textAlign: 'left', marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Admin Email</label>
+              <input
+                type="email"
+                placeholder="admin@domain.com"
+                style={{ width: '100%', padding: '12px', border: '2px solid #eee', borderRadius: '8px', outline: 'none' }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ textAlign: 'left', marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Admin Password</label>
               <input 
                 type="password" 
@@ -34,10 +63,19 @@ export default function AdminLoginPage() {
                 style={{ width: '100%', padding: '12px', border: '2px solid #eee', borderRadius: '8px', outline: 'none' }}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
             {error && <p style={{ color: 'var(--blood)', fontSize: '0.9rem', marginBottom: '20px', fontWeight: '600' }}>{error}</p>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Login</button>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Signing in...' : 'Login'}
+            </button>
+            <p style={{ marginTop: '14px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              Forgot password? Contact admin at{' '}
+              <a href="mailto:khaanabanktrust@gmail.com" style={{ color: 'var(--primary)', fontWeight: '600' }}>
+                khaanabanktrust@gmail.com
+              </a>
+            </p>
           </form>
         </div>
       </div>

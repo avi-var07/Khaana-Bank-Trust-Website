@@ -2,8 +2,13 @@ import { NextResponse } from 'next/server';
 import { readDB } from '@/lib/db';
 import transporter from '@/lib/mailer';
 import { generateICS } from '@/lib/ics';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 export async function POST(request) {
+  if (!isAdminAuthenticated(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { eventId } = await request.json();
     const events = await readDB('events.json');
@@ -35,12 +40,13 @@ export async function POST(request) {
       } catch (err) {
         console.error(`Failed to send email to ${sub.email}:`, err);
       }
+
     }
 
     return NextResponse.json({ 
-      message: 'Notifications processed', 
+      message: 'Notifications sent to all subscribers', 
       emailCount,
-      whatsappNote: 'WhatsApp messages can be sent via WhatsApp Business manual broadcast using the subscriber list.'
+      emailsSent: emailCount
     });
   } catch (err) {
     console.error('Notification error:', err);
