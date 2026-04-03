@@ -16,6 +16,16 @@ const Footer = () => {
               <strong>Contact: Mr. Ankit Tripathi <br /> 
               <a href="https://wa.me/918840775823" style={{color: '#25D366'}}>📞/💬 +91 8840775823 (WhatsApp)</a></strong>
             </p>
+            <p className={styles.description} style={{marginTop: '12px', fontSize: '13px'}}>
+              <strong>Office Location:</strong><br />
+              H.no 1, Tripathi Bhawan<br />
+              Mainatali Mughalsarai<br />
+              District-Chandauli<br />
+              PIN code - 232101<br />
+              <a href="https://www.google.com/maps?q=H.no+1,+Tripathi+Bhawan,+Mainatali+Mughalsarai,+District-Chandauli,+232101" target="_blank" rel="noopener noreferrer" style={{color: '#ff6b35', textDecoration: 'none', marginTop: '8px', display: 'inline-block'}}>
+                📍 View on Google Maps
+              </a>
+            </p>
           </div>
           
           <div className={styles.links}>

@@ -19,20 +19,13 @@ export async function POST(request) {
     const adminEmail = getAdminEmail();
     const adminPassword = getAdminPassword();
 
-    if (!adminPassword) {
-      return NextResponse.json(
-        { error: 'Admin password is not configured on server.' },
-        { status: 500 }
-      );
-    }
-
     try {
       const admins = await readDB('admins.json');
       const hashedPassword = hashPassword(password);
 
       if (email === adminEmail) {
         const primaryFromFile = admins.find(a => a.email === email);
-        const isEnvMatch = password === adminPassword;
+        const isEnvMatch = !!adminPassword && password === adminPassword;
         const isFileMatch = !!primaryFromFile?.passwordHash && primaryFromFile.passwordHash === hashedPassword;
 
         if (!isEnvMatch && !isFileMatch) {
@@ -51,7 +44,7 @@ export async function POST(request) {
       response.cookies.set(cookie.name, token, cookie.options);
       return response;
     } catch (dbErr) {
-      if (email === adminEmail && password === adminPassword) {
+      if (email === adminEmail && adminPassword && password === adminPassword) {
         const token = createSessionToken(adminEmail);
         const cookie = getSessionCookieConfig();
         const response = NextResponse.json({ message: 'Login successful' });

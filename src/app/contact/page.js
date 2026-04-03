@@ -75,7 +75,28 @@ export default function ContactPage() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <h4>Visit Us</h4>
-              <p>Varanasi, Uttar Pradesh, India</p>
+              <p>
+                H.no 1, Tripathi Bhawan<br />
+                Mainatali Mughalsarai<br />
+                District-Chandauli<br />
+                PIN code - 232101
+              </p>
+              <button 
+                onClick={() => window.open('https://www.google.com/maps?q=H.no+1,+Tripathi+Bhawan,+Mainatali+Mughalsarai,+District-Chandauli,+232101', '_blank')}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  backgroundColor: 'var(--blood)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                📍 Get Location
+              </button>
             </div>
           </div>
 
