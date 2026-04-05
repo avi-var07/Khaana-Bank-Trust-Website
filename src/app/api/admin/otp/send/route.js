@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { readDB, writeDB } from '@/lib/db';
-import transporter from '@/lib/mailer';
+import transporter, { senderAddress } from '@/lib/mailer';
 
 const RESEND_COOLDOWN_MS = 60 * 1000;
 const FIRST_BLOCK_MS = 15 * 60 * 1000;
@@ -19,6 +19,13 @@ function generateOTP() {
 export async function POST(request) {
   try {
     const { email, purpose = 'admin-join' } = await request.json();
+
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      return NextResponse.json(
+        { error: 'Email service is not configured on server.' },
+        { status: 500 }
+      );
+    }
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Valid email is required' }, { status: 400 });
@@ -97,7 +104,7 @@ export async function POST(request) {
     await writeDB('admin-otp-limits.json', limits);
 
     await transporter.sendMail({
-      from: '"Khaana Bank Trust" <info@khaanabanktrust.org>',
+      from: senderAddress,
       to: email,
       subject: 'Your OTP for Admin Access Request',
       text: `Your OTP to verify admin access request is: ${otp}\n\nThis OTP expires in 10 minutes.\n\nIf you did not request this, ignore this email.`,

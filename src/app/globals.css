@@ -173,8 +173,8 @@ img {
   :root {
     --header-height: 70px;
     --section-padding: 60px 20px;
-      --header-height: 90px;
-  
+  }
+
   .section-title h2 {
     font-size: 2rem;
   }

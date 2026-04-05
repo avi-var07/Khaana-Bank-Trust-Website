@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readDB } from '@/lib/db';
-import transporter from '@/lib/mailer';
+import transporter, { senderAddress } from '@/lib/mailer';
 import { generateICS } from '@/lib/ics';
 import { isAdminAuthenticated } from '@/lib/adminAuth';
 
@@ -25,7 +25,7 @@ export async function POST(request) {
     for (const sub of subscribers) {
       try {
         await transporter.sendMail({
-          from: '"Khaana Bank Trust" <info@Khaanabank.org>',
+          from: senderAddress,
           to: sub.email,
           subject: `Upcoming Event: ${event.title}`,
           text: `Hi ${sub.name},\n\nWe have an upcoming event: ${event.title}\nDate: ${event.date}\nLocation: ${event.location}\n\n${event.description}\n\nSee you there!`,

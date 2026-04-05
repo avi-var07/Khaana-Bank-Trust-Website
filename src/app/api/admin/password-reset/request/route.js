@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { readDB, writeDB } from '@/lib/db';
-import transporter from '@/lib/mailer';
+import transporter, { senderAddress } from '@/lib/mailer';
 import { getAdminEmail } from '@/lib/adminAuth';
 
 function hashPassword(password) {
@@ -95,7 +95,7 @@ export async function POST(request) {
     const approvalLink = `${process.env.APP_URL || 'http://localhost:3000'}/admin/reset-password-approve?token=${approvalToken}`;
 
     await transporter.sendMail({
-      from: '"Khaana Bank Trust" <info@khaanabanktrust.org>',
+      from: senderAddress,
       to: getAdminEmail(),
       subject: `Admin Password Reset Approval Required: ${email}`,
       text: `A password reset request has been submitted.\n\nAdmin Email: ${email}\nTime: ${new Date().toLocaleString()}\n\nApprove here:\n${approvalLink}\n\nThis link expires in 24 hours.`,

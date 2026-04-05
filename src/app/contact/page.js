@@ -35,7 +35,7 @@ export default function ContactPage() {
         return;
       }
 
-      setFormMsg('Message sent successfully. We will contact you soon.');
+      setFormMsg(data.message || 'Message sent successfully. We will contact you soon.');
       form.reset();
     } catch {
       setFormErr('Unable to send message right now. Please try again later.');

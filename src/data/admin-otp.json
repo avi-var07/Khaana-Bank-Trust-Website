@@ -1,5 +1,15 @@
 [
   {
+    "email": "aviralvarshney07@gmail.com",
+    "purpose": "admin-join",
+    "otpHash": "b5521380a0fba6b61b26b86f36509101942d962ad78b6ef96acaea0594188287",
+    "createdAt": 1775249822762,
+    "expiresAt": 1775250422762,
+    "used": true,
+    "attempts": 1,
+    "verifiedAt": 1775249845606
+  },
+  {
     "email": "khaanabanktrust@gmail.com",
     "purpose": "admin-reset",
     "otpHash": "4fb656e9cd8612b54de5a2976e4f2f94e100f482eea724a5bbdbd1da320084ed",
@@ -8,14 +18,5 @@
     "used": true,
     "attempts": 1,
     "verifiedAt": 1775161606668
-  },
-  {
-    "email": "aviralvarshney07@gmail.com",
-    "purpose": "admin-join",
-    "otpHash": "d37df657a646b692787723d49fedfff1be71b0aa35b0a968765a41a40d10416d",
-    "createdAt": 1775160954940,
-    "expiresAt": 1775161554940,
-    "used": false,
-    "attempts": 0
   }
 ]

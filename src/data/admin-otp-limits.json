@@ -7,5 +7,14 @@
     "windowLevel": 0,
     "blockedUntil": 0,
     "lastSentAt": 1775161577028
+  },
+  {
+    "key": "aviralvarshney07@gmail.com::admin-join",
+    "email": "aviralvarshney07@gmail.com",
+    "purpose": "admin-join",
+    "attemptsInWindow": 1,
+    "windowLevel": 0,
+    "blockedUntil": 0,
+    "lastSentAt": 1775249822750
   }
 ]

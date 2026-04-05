@@ -69,6 +69,7 @@ export default function SupportPage() {
               body: JSON.stringify({
                 name: donor.name,
                 email: donor.email,
+                phone: donor.phone,
                 amount: parsedAmount,
                 paymentId: response.razorpay_payment_id,
               }),
