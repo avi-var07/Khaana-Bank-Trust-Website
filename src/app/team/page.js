@@ -8,8 +8,6 @@ export default function TeamPage() {
   const trustees = [
     { name: "Mr. Ankit Tripathi", role: "Managing Trustee & Settler", education: "Master of Public Administration", from: "Swami Vivekananda Shubharti University", Prof: "Deputy Manager at HDFC Bank Ltd", photo: "/images/team/Ankit Bhaiya.png" },
     { name: "Mr. Praveen Agrahari", role: "Trustee", education: "Master of Commerce", from: "Mahatma Gandhi Kashi Vidyapeeth", Prof: "Assistant Manager at Reliance Nippon Life Insurance", photo: "/images/team/Praveen Agrahari.jpeg" },
-    { name: "Mr. Prajwal Jaiswal", role: "Trustee", education: "Bachelor of Computer Applications", from: "Swami Vivekananda Shubharti University", Prof: "Software Engineer at Aivree Pvt. Ltd" },
-    { name: "Mr. Abhishek Gupta", role: "Trustee", education: "Bachelor of Arts", from: "Mahatma Gandhi Kashi Vidyapeeth", Prof: "Business Owner" },
     { name: "Mr. Saroj Kumar Tiwari", role: "Trustee", education: "Bachelor of Commerce", from: "Banaras Hindu University", Prof: "Business Owner" },
     { name: "Mr. Ashok Kumar Agrahari", role: "Trustee", education: "Bachelor of Arts", from: "Veer Bahadur Singh Purvanchal University", Prof: "Business Owner" }
   ];
@@ -28,7 +26,6 @@ export default function TeamPage() {
     { name: "Mr. Amit Prajapati", role: "Member", Prof: "Professional Dance Choreographer & Teacher", photo: "/images/team/Amit Prajapati.jpeg" },
     { name: "Mr. Surya Pratap Gupta", role: "Member", Prof: "Business Owner", photo: "/images/team/Surya Pratap Gupta.jpeg" },
     { name: "Mr. Ankesh Srivastava", role: "Member", Prof: "Business Owner", photo: "/images/team/Ankesh Srivastava.jpeg" },
-    { name: "Mr. Vicky Kumar", role: "Member", Prof: "Business Owner" },
     { name: "Mr. Shubham Jaiswal", role: "Member", Prof: "Business Owner", photo: "/images/team/Shubham Jaiswal.jpeg" },
   ];
 
