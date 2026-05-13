@@ -3,6 +3,8 @@ import { readDB, writeDB } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import transporter, { senderAddress } from '@/lib/mailer';
 import { sendWhatsAppMessage } from '@/lib/whatsapp';
+import { enforceRateLimit } from '@/lib/rateLimit';
+import { verifyCaptchaToken } from '@/lib/captcha';
 
 export async function GET() {
   try {
@@ -14,8 +16,25 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const rate = await enforceRateLimit(request, {
+    key: 'public-subscribe',
+    limit: 20,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (rate.blocked) {
+    return NextResponse.json(
+      { error: 'Too many subscribe attempts. Try again later.', retryAfterSec: rate.retryAfterSec },
+      { status: 429 }
+    );
+  }
+
   try {
-    const { name, email, phone } = await request.json();
+    const { name, email, phone, captchaToken } = await request.json();
+
+    const captcha = await verifyCaptchaToken(captchaToken, request, 'subscribe');
+    if (!captcha.success) {
+      return NextResponse.json({ error: captcha.error }, { status: 400 });
+    }
 
     if (!name || !email || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

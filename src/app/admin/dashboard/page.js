@@ -22,6 +22,9 @@ export default function AdminDashboard() {
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState('');
   const abortControllerRef = useRef(null);
   const router = useRouter();
 
@@ -168,6 +171,37 @@ export default function AdminDashboard() {
       alert('Unable to reset password right now');
     } finally {
       setAccountBusy(false);
+    }
+  };
+
+  const sendAdminInvite = async () => {
+    setInviteMessage('');
+
+    if (!inviteEmail || !inviteEmail.includes('@')) {
+      setInviteMessage('Please enter a valid email for invite.');
+      return;
+    }
+
+    setInviteBusy(true);
+    try {
+      const res = await fetch('/api/admin/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setInviteMessage(data.error || 'Failed to send invite.');
+        return;
+      }
+
+      setInviteMessage(`Invite sent to ${data.email}. Expires in 24 hours.`);
+      setInviteEmail('');
+    } catch {
+      setInviteMessage('Unable to send invite right now.');
+    } finally {
+      setInviteBusy(false);
     }
   };
 
@@ -407,6 +441,32 @@ export default function AdminDashboard() {
             <h3 style={{ marginBottom: '18px' }}>Profile</h3>
             <p style={{ marginBottom: '8px' }}><strong>Email:</strong> {account.email}</p>
             <p style={{ marginBottom: '20px' }}><strong>Role:</strong> {account.role}</p>
+
+            {account.role === 'primary' && (
+              <div style={{ marginBottom: '26px' }}>
+                <h3 style={{ marginBottom: '12px' }}>Invite Admin</h3>
+                <p style={{ marginBottom: '10px', color: 'var(--text-muted)' }}>
+                  Invite-only onboarding: send a one-time setup link valid for 24 hours.
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="new-admin@example.com"
+                    style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
+                  />
+                  <button className="btn btn-primary" onClick={sendAdminInvite} disabled={inviteBusy}>
+                    {inviteBusy ? 'Sending...' : 'Send Invite'}
+                  </button>
+                </div>
+                {inviteMessage && (
+                  <p style={{ marginTop: '10px', color: inviteMessage.includes('sent') ? '#15803d' : '#b91c1c' }}>
+                    {inviteMessage}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div style={{ marginBottom: '26px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Phone Number</label>

@@ -15,7 +15,13 @@ export default function SupportPage() {
   const [view, setView] = useState('support'); // 'support' or 'donate'
   const [loading, setLoading] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
-  const [donor, setDonor] = useState({ name: '', email: '', phone: '' });
+  const [donor, setDonor] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    description: 'Donation for social initiatives',
+  });
 
   const handleDonate = async (amount) => {
     const finalAmount = amount || customAmount;
@@ -63,17 +69,24 @@ export default function SupportPage() {
         order_id: data.id,
         handler: async function (response) {
           try {
-            await fetch('/api/donate/confirm', {
+            const confirmRes = await fetch('/api/donate/confirm', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 name: donor.name,
                 email: donor.email,
                 phone: donor.phone,
+                address: donor.address,
+                description: donor.description,
                 amount: parsedAmount,
                 paymentId: response.razorpay_payment_id,
               }),
             });
+
+            if (!confirmRes.ok) {
+              const confirmData = await confirmRes.json();
+              console.error('Receipt generation failed:', confirmData?.error || 'Unknown error');
+            }
           } catch (err) {
             console.error('Thank-you email call failed:', err);
           }
@@ -177,6 +190,18 @@ export default function SupportPage() {
                       value={donor.phone}
                       onChange={(e) => setDonor({ ...donor, phone: e.target.value })}
                     />
+                    <input
+                      type="text"
+                      placeholder="Address (optional)"
+                      value={donor.address}
+                      onChange={(e) => setDonor({ ...donor, address: e.target.value })}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Description (optional)"
+                      value={donor.description}
+                      onChange={(e) => setDonor({ ...donor, description: e.target.value })}
+                    />
                   </div>
                 </div>
                 <div className="donation-options">
@@ -189,7 +214,7 @@ export default function SupportPage() {
                   </div>
                   <div className="option-card">
                     <div className="amount">₹1500</div>
-                    <p>Sponsors a child's education for a month</p>
+                    <p>Sponsors a child&apos;s education for a month</p>
                     <button className="btn btn-primary" onClick={() => handleDonate(1500)} disabled={loading}>
                       {loading ? 'Processing...' : 'Process Donation'}
                     </button>
@@ -301,7 +326,7 @@ export default function SupportPage() {
 
         .donor-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 12px;
         }
 

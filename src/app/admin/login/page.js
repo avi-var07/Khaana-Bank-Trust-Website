@@ -76,10 +76,8 @@ export default function AdminLoginPage() {
                 Forgot password? Request reset approval
               </Link>
             </p>
-            <p style={{ marginTop: '10px', fontSize: '0.95rem' }}>
-              <Link href="/admin/request-access" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                Request to Join As Admin
-              </Link>
+            <p style={{ marginTop: '10px', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+              Admin onboarding is invite-only.
             </p>
           </form>
         </div>

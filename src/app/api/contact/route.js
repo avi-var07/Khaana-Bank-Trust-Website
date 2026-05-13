@@ -2,10 +2,29 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { readDB, writeDB } from '@/lib/db';
 import transporter, { senderAddress } from '@/lib/mailer';
+import { enforceRateLimit } from '@/lib/rateLimit';
+import { verifyCaptchaToken } from '@/lib/captcha';
 
 export async function POST(request) {
+  const rate = await enforceRateLimit(request, {
+    key: 'public-contact',
+    limit: 12,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (rate.blocked) {
+    return NextResponse.json(
+      { error: 'Too many contact attempts. Try again later.', retryAfterSec: rate.retryAfterSec },
+      { status: 429 }
+    );
+  }
+
   try {
-    const { fullName, phone, email, subject, message } = await request.json();
+    const { fullName, phone, email, subject, message, captchaToken } = await request.json();
+
+    const captcha = await verifyCaptchaToken(captchaToken, request, 'contact');
+    if (!captcha.success) {
+      return NextResponse.json({ error: captcha.error }, { status: 400 });
+    }
 
     if (!fullName || !phone || !email || !subject || !message) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });

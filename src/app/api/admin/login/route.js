@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { readDB } from '@/lib/db';
 import {
   createSessionToken,
@@ -7,12 +6,22 @@ import {
   getAdminPassword,
   getSessionCookieConfig,
 } from '@/lib/adminAuth';
-
-function hashPassword(password) {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
+import { enforceRateLimit } from '@/lib/rateLimit';
+import { verifyPassword } from '@/lib/password';
 
 export async function POST(request) {
+  const rate = await enforceRateLimit(request, {
+    key: 'admin-login',
+    limit: 15,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (rate.blocked) {
+    return NextResponse.json(
+      { error: 'Too many login attempts. Try again later.', retryAfterSec: rate.retryAfterSec },
+      { status: 429 }
+    );
+  }
+
   try {
     const { email, password } = await request.json();
 
@@ -21,19 +30,19 @@ export async function POST(request) {
 
     try {
       const admins = await readDB('admins.json');
-      const hashedPassword = hashPassword(password);
 
       if (email === adminEmail) {
         const primaryFromFile = admins.find(a => a.email === email);
         const isEnvMatch = !!adminPassword && password === adminPassword;
-        const isFileMatch = !!primaryFromFile?.passwordHash && primaryFromFile.passwordHash === hashedPassword;
+        const isFileMatch = !!primaryFromFile?.passwordHash && await verifyPassword(password, primaryFromFile.passwordHash);
 
         if (!isEnvMatch && !isFileMatch) {
           return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
         }
       } else {
         const admin = admins.find(a => a.email === email && (a.status === 'approved' || a.status === 'primary'));
-        if (!admin || admin.passwordHash !== hashedPassword) {
+        const isMatch = admin?.passwordHash ? await verifyPassword(password, admin.passwordHash) : false;
+        if (!admin || !isMatch) {
           return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
         }
       }

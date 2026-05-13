@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { readDB, writeDB } from '@/lib/db';
 import transporter, { senderAddress } from '@/lib/mailer';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 const RESEND_COOLDOWN_MS = 60 * 1000;
 const FIRST_BLOCK_MS = 15 * 60 * 1000;
@@ -17,6 +18,18 @@ function generateOTP() {
 }
 
 export async function POST(request) {
+  const rate = await enforceRateLimit(request, {
+    key: 'admin-otp-send',
+    limit: 50,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (rate.blocked) {
+    return NextResponse.json(
+      { error: 'Too many OTP requests from this IP. Try again later.', retryAfterSec: rate.retryAfterSec },
+      { status: 429 }
+    );
+  }
+
   try {
     const { email, purpose = 'admin-join' } = await request.json();
 

@@ -4,10 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { readDB, writeDB } from '@/lib/db';
 import transporter, { senderAddress } from '@/lib/mailer';
 import { getAdminEmail } from '@/lib/adminAuth';
-
-function hashPassword(password) {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
+import { hashPassword } from '@/lib/password';
 
 function verifyToken(token, email) {
   try {
@@ -78,7 +75,7 @@ export async function POST(request) {
     }
 
     const resetRequestId = uuidv4();
-    const passwordHash = hashPassword(newPassword);
+    const passwordHash = await hashPassword(newPassword);
 
     const resetRequest = {
       id: resetRequestId,

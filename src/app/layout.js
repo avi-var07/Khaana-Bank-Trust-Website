@@ -1,6 +1,8 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ChatbotWidget from "@/components/ChatbotWidget";
+import SourceProtection from "@/components/SourceProtection";
 
 export const metadata = {
   title: "Khaana Bank Trust - Serving Humanity through Nutrition & Care",
@@ -11,11 +13,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <SourceProtection />
         <Navbar />
         <main style={{ marginTop: 'var(--header-height)', minHeight: 'calc(100vh - var(--header-height))' }}>
           {children}
         </main>
         <Footer />
+        <ChatbotWidget />
       </body>
     </html>
   );

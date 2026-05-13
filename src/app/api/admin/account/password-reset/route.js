@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { readDB, writeDB } from '@/lib/db';
 import { getAdminEmail, getAuthenticatedAdminEmail, isAdminAuthenticated } from '@/lib/adminAuth';
-
-function hashPassword(password) {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
+import { hashPassword } from '@/lib/password';
 
 function verifyToken(token, email) {
   try {
@@ -48,14 +44,15 @@ export async function POST(request) {
     const idx = admins.findIndex((a) => a.email === email);
 
     if (idx === -1) {
+      const passwordHash = await hashPassword(newPassword);
       admins.push({
         email,
         status: email === getAdminEmail() ? 'primary' : 'approved',
-        passwordHash: hashPassword(newPassword),
+        passwordHash,
         passwordUpdatedAt: new Date().toISOString(),
       });
     } else {
-      admins[idx].passwordHash = hashPassword(newPassword);
+      admins[idx].passwordHash = await hashPassword(newPassword);
       admins[idx].passwordUpdatedAt = new Date().toISOString();
     }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { readDB, writeDB } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 function hashOTP(otp) {
   return crypto.createHash('sha256').update(otp).digest('hex');
@@ -23,6 +24,18 @@ function createVerificationToken(email, purpose) {
 }
 
 export async function POST(request) {
+  const rate = await enforceRateLimit(request, {
+    key: 'admin-otp-verify',
+    limit: 80,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (rate.blocked) {
+    return NextResponse.json(
+      { error: 'Too many OTP verification attempts. Try again later.', retryAfterSec: rate.retryAfterSec },
+      { status: 429 }
+    );
+  }
+
   try {
     const { email, otp, purpose = 'admin-join' } = await request.json();
 
