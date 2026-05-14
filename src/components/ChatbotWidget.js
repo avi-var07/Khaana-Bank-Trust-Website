@@ -75,7 +75,7 @@ export default function ChatbotWidget() {
       setMessages([
         {
           role: 'bot',
-          text: "Namaste! 🙏 I'm **Khaana Bot**, the AI assistant for Khaana Bank Trust.\n\nI can help you with:\n• 🌱 Volunteering for events\n• 💰 Making donations\n• 📅 Finding upcoming events\n• 📝 Learning about our mission\n\nHow can I help you today?",
+          text: "Namaste! 🙏 I'm **Khaana Bank Trust Bot**, the AI assistant for Khaana Bank Trust.\n\nI can help you with:\n• 🌱 Volunteering for events\n• 💰 Making donations\n• 📅 Finding upcoming events\n• 📝 Learning about our mission\n\nHow can I help you today?",
           time: new Date(),
           isWelcome: true,
         },
@@ -119,8 +119,10 @@ export default function ChatbotWidget() {
     setIsLoading(true);
     setPendingAction(null);
 
+    const baseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+    
     try {
-      const res = await fetch('/api/chatbot', {
+      const res = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,9 +172,10 @@ export default function ChatbotWidget() {
     try {
       let result = null;
 
+      const baseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
       switch (actionType) {
         case 'REGISTER_VOLUNTEER': {
-          const res = await fetch('/api/volunteer', {
+          const res = await fetch(`${baseUrl}/api/volunteer`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -214,7 +217,7 @@ export default function ChatbotWidget() {
         }
 
         case 'SUBSCRIBE_USER': {
-          const res = await fetch('/api/subscribe', {
+          const res = await fetch(`${baseUrl}/api/subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -239,7 +242,7 @@ export default function ChatbotWidget() {
         }
 
         case 'GENERATE_BLOG_DRAFT': {
-          const res = await fetch('/api/chatbot/blog-draft', {
+          const res = await fetch(`${baseUrl}/api/chatbot/blog-draft`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -369,11 +372,11 @@ export default function ChatbotWidget() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`${styles.messageRow} ${msg.role === 'user' ? styles.messageRowUser : styles.messageRowBot}`}>
                 {msg.role === 'bot' && <div className={styles.botAvatarSmall}>🤖</div>}
-                <div>
+                <div className={msg.role === 'user' ? styles.messageContentUser : styles.messageContentBot}>
                   <div className={`${styles.messageBubble} ${msg.role === 'user' ? styles.userBubble : msg.isError ? styles.errorBubble : styles.botBubble}`}>
                     {renderText(msg.text)}
                   </div>
-                  <div className={styles.messageTime}>{formatTime(msg.time)}</div>
+                  <div className={`${styles.messageTime} ${msg.role === 'user' ? styles.messageTimeUser : ''}`}>{formatTime(msg.time)}</div>
                 </div>
               </div>
             ))}

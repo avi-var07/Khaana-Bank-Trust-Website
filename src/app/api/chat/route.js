@@ -159,12 +159,71 @@ async function callOpenRouter(apiKey, model, messages) {
   return { ok: true, content, model };
 }
 
-export async function POST(request) {
-  const apiKey = process.env.OPENROUTER_API_KEY || '';
+async function callGeminiDirect(apiKey, systemPrompt, chatMessages) {
+  const model = 'gemini-2.0-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  if (!apiKey) {
+  // Convert OpenAI-format messages to Gemini format
+  const contents = [];
+  for (const msg of chatMessages) {
+    if (msg.role === 'system') continue; // system prompt handled separately
+    contents.push({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }],
+    });
+  }
+
+  const payload = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    generationConfig: { temperature: 0.7, topP: 0.9, topK: 40, maxOutputTokens: 2048 },
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text();
+    return { ok: false, status: response.status, error: errBody };
+  }
+
+  const data = await response.json();
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) {
+    return { ok: false, status: 500, error: 'Empty response from Gemini' };
+  }
+
+  return { ok: true, content, model: 'gemini-direct' };
+}
+
+function parseActionFromResponse(rawContent) {
+  let chatMessage = rawContent;
+  let action = null;
+
+  const actionMatch = rawContent.match(/---ACTION_JSON---\s*([\s\S]*?)\s*---END_ACTION---/);
+  if (actionMatch) {
+    chatMessage = rawContent.replace(/---ACTION_JSON---[\s\S]*?---END_ACTION---/, '').trim();
+    try {
+      action = JSON.parse(actionMatch[1].trim());
+    } catch (parseErr) {
+      console.error('Failed to parse action JSON:', parseErr);
+    }
+  }
+
+  return { chatMessage, action };
+}
+
+export async function POST(request) {
+  const openrouterKey = process.env.OPENROUTER_API_KEY || '';
+  const geminiKey = process.env.GEMINI_API_KEY || '';
+
+  if (!openrouterKey && !geminiKey) {
+    console.error('Chatbot: No API keys configured. Set OPENROUTER_API_KEY or GEMINI_API_KEY.');
     return NextResponse.json(
-      { error: 'Chatbot is not configured. Please add OPENROUTER_API_KEY to environment variables.' },
+      { error: 'Chatbot is not configured. Please contact the administrator.' },
       { status: 503 }
     );
   }
@@ -203,42 +262,41 @@ export async function POST(request) {
 
     chatMessages.push({ role: 'user', content: message });
 
-    // Determine model list: env-configured model first, then fallbacks
-    const envModel = process.env.OPENROUTER_MODEL || '';
-    const modelsToTry = envModel
-      ? [envModel, ...FREE_MODELS.filter(m => m !== envModel)]
-      : FREE_MODELS;
+    // === PROVIDER 1: Try OpenRouter (with model fallback) ===
+    if (openrouterKey) {
+      const envModel = process.env.OPENROUTER_MODEL || '';
+      const modelsToTry = envModel
+        ? [envModel, ...FREE_MODELS.filter(m => m !== envModel)]
+        : FREE_MODELS;
 
-    // Try models with automatic fallback
-    let lastError = '';
-    for (const model of modelsToTry) {
-      const result = await callOpenRouter(apiKey, model, chatMessages);
+      for (const model of modelsToTry) {
+        const result = await callOpenRouter(openrouterKey, model, chatMessages);
 
-      if (result.ok) {
-        // Parse action JSON if present
-        let chatMessage = result.content;
-        let action = null;
-
-        const actionMatch = result.content.match(/---ACTION_JSON---\s*([\s\S]*?)\s*---END_ACTION---/);
-        if (actionMatch) {
-          chatMessage = result.content.replace(/---ACTION_JSON---[\s\S]*?---END_ACTION---/, '').trim();
-          try {
-            action = JSON.parse(actionMatch[1].trim());
-          } catch (parseErr) {
-            console.error('Failed to parse action JSON:', parseErr);
-          }
+        if (result.ok) {
+          const { chatMessage, action } = parseActionFromResponse(result.content);
+          return NextResponse.json({ message: chatMessage, action });
         }
 
+        console.warn(`OpenRouter model ${model} failed (${result.status})`);
+      }
+
+      console.error('All OpenRouter models exhausted.');
+    }
+
+    // === PROVIDER 2: Fallback to direct Gemini API ===
+    if (geminiKey) {
+      console.log('Falling back to direct Gemini API...');
+      const result = await callGeminiDirect(geminiKey, systemPrompt, chatMessages);
+
+      if (result.ok) {
+        const { chatMessage, action } = parseActionFromResponse(result.content);
         return NextResponse.json({ message: chatMessage, action });
       }
 
-      // Log and continue to next model
-      console.warn(`Model ${model} failed (${result.status}): ${result.error?.substring(0, 120)}`);
-      lastError = result.error;
+      console.error('Gemini direct also failed:', result.status);
     }
 
-    // All models failed
-    console.error('All OpenRouter models failed. Last error:', lastError);
+    // All providers failed
     return NextResponse.json(
       { error: 'AI service is temporarily unavailable. Please try again shortly.' },
       { status: 502 }
