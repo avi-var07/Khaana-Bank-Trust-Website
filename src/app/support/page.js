@@ -1,5 +1,5 @@
-'use client';
 import { useState } from 'react';
+import { apiRequest } from '@/lib/apiClient';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -46,32 +46,30 @@ export default function SupportPage() {
         return;
       }
 
-      const res = await fetch('/api/donate', {
+      const response = await apiRequest('/api/donate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parsedAmount })
+        body: JSON.stringify({ 
+            amount: parsedAmount,
+            name: donor.name,
+            email: donor.email,
+            phone: donor.phone 
+        }),
       });
-      
-      const data = await res.json();
-      
-      if (res.status === 501) {
-        alert(data.error);
-        setLoading(false);
-        return;
-      }
+
+      if (!response.success) throw new Error(response.error);
+      const order = response.data;
 
       const options = {
-        key: data.key_id,
-        amount: data.amount,
-        currency: data.currency,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
         name: "Khaana Bank Trust",
         description: "Donation for social initiatives",
-        order_id: data.id,
-        handler: async function (response) {
+        order_id: order.id,
+        handler: async function (razorpayResponse) {
           try {
-            const confirmRes = await fetch('/api/donate/confirm', {
+            const confirmRes = await apiRequest('/api/donate/confirm', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 name: donor.name,
                 email: donor.email,
@@ -79,19 +77,21 @@ export default function SupportPage() {
                 address: donor.address,
                 description: donor.description,
                 amount: parsedAmount,
-                paymentId: response.razorpay_payment_id,
+                paymentId: razorpayResponse.razorpay_payment_id,
+                razorpay_order_id: razorpayResponse.razorpay_order_id,
+                razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                razorpay_signature: razorpayResponse.razorpay_signature,
               }),
             });
 
-            if (!confirmRes.ok) {
-              const confirmData = await confirmRes.json();
-              console.error('Receipt generation failed:', confirmData?.error || 'Unknown error');
+            if (!confirmRes.success) {
+              console.error('Payment confirmation failed:', confirmRes.error);
             }
           } catch (err) {
-            console.error('Thank-you email call failed:', err);
+            console.error('Network error during confirmation:', err);
           }
 
-          alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}. Thank you for your support.`);
+          alert(`Payment Successful! Thank you for your support.`);
           window.location.href = '/support?success=true';
         },
         prefill: {

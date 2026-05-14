@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiRequest } from '@/lib/apiClient';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('khaanabanktrust@gmail.com');
@@ -16,21 +17,18 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/admin/login', {
+      const response = await apiRequest('/api/admin/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      if (res.ok) {
-        router.push('/admin/dashboard');
-        return;
+      if (response.success) {
+        window.location.href = '/admin/dashboard';
+      } else {
+        setError(response.error || 'Invalid credentials');
       }
-
-      const payload = await res.json().catch(() => ({}));
-      setError(payload.error || 'Invalid credentials');
-    } catch {
-      setError('Unable to login right now. Please try again.');
+    } catch (err) {
+      setError('Unable to connect to admin services.');
     } finally {
       setLoading(false);
     }

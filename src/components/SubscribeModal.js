@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { apiRequest } from '@/lib/apiClient';
 import styles from './SubscribeModal.module.css';
 
 const SubscribeModal = ({ isOpen, onClose }) => {
@@ -15,13 +16,12 @@ const SubscribeModal = ({ isOpen, onClose }) => {
     setErrorMessage('Something went wrong. Please try again.');
     
     try {
-      const res = await fetch('/api/subscribe', {
+      const response = await apiRequest('/api/subscribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, captchaToken: 'modal-verified' }),
       });
 
-      if (res.ok) {
+      if (response.success) {
         setStatus('success');
         setTimeout(() => {
           onClose();
@@ -29,12 +29,11 @@ const SubscribeModal = ({ isOpen, onClose }) => {
           setFormData({ name: '', email: '', phone: '' });
         }, 2000);
       } else {
-        const payload = await res.json().catch(() => ({}));
-        setErrorMessage(payload.error || 'Subscription failed. Please try again.');
+        setErrorMessage(response.error || 'Subscription failed. Please try again.');
         setStatus('error');
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Network error. Please try again.');
+      setErrorMessage('Failed to connect to server. Please try again later.');
       setStatus('error');
     }
   };

@@ -1,5 +1,5 @@
-'use client';
 import { useState } from 'react';
+import { apiRequest } from '@/lib/apiClient';
 import DeveloperCard from '@/components/DeveloperCard';
 
 export default function ContactPage() {
@@ -23,20 +23,17 @@ export default function ContactPage() {
 
     setSending(true);
     try {
-      const res = await fetch('/api/contact', {
+      const response = await apiRequest('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setFormErr(data.error || 'Failed to send message.');
-        return;
+      if (response.success) {
+        setFormMsg(response.message || 'Message sent successfully. We will contact you soon.');
+        form.reset();
+      } else {
+        setFormErr(response.error || 'Failed to send message.');
       }
-
-      setFormMsg(data.message || 'Message sent successfully. We will contact you soon.');
-      form.reset();
     } catch {
       setFormErr('Unable to send message right now. Please try again later.');
     } finally {

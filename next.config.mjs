@@ -25,11 +25,14 @@ const nextConfig = {
         ],
       },
       {
-        // Block direct access to API source files
         source: '/api/:path*',
         headers: [
           { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' }, // In production, replace with specific domain if preferred
+          { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
         ],
       },
     ];

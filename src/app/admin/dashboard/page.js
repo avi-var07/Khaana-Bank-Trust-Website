@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiRequest } from '@/lib/apiClient';
 import styles from '@/components/SubscribeModal.module.css';
 
 export default function AdminDashboard() {
@@ -31,9 +32,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const res = await fetch('/api/admin/session');
-        const payload = await res.json();
-        if (!payload?.authenticated) {
+        const response = await apiRequest('/api/admin/session');
+        if (!response.success || !response.data?.authenticated) {
           router.push('/admin/login');
           return;
         }
@@ -51,19 +51,20 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const subRes = await fetch('/api/subscribe');
-      const subData = await subRes.json();
-      setSubscribers(Array.isArray(subData) ? subData : []);
+      const subResponse = await apiRequest('/api/subscribe');
+      if (subResponse.success) {
+        setSubscribers(Array.isArray(subResponse.data) ? subResponse.data : []);
+      }
 
-      const eventRes = await fetch('/api/admin/events');
-      const eventData = await eventRes.json();
-      setEvents(Array.isArray(eventData) ? eventData : []);
+      const eventResponse = await apiRequest('/api/admin/events');
+      if (eventResponse.success) {
+        setEvents(Array.isArray(eventResponse.data) ? eventResponse.data : []);
+      }
 
-      const accountRes = await fetch('/api/admin/account');
-      const accountData = await accountRes.json();
-      if (accountRes.ok) {
-        setAccount(accountData);
-        setPhoneInput(accountData.phone || '');
+      const accountResponse = await apiRequest('/api/admin/account');
+      if (accountResponse.success) {
+        setAccount(accountResponse.data);
+        setPhoneInput(accountResponse.data.phone || '');
       }
     } catch (err) {
       console.error('Fetch error:', err);
@@ -73,14 +74,12 @@ export default function AdminDashboard() {
   const updatePhoneNumber = async () => {
     setAccountBusy(true);
     try {
-      const res = await fetch('/api/admin/account', {
+      const response = await apiRequest('/api/admin/account', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phoneInput }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Failed to update phone number');
+      if (!response.success) {
+        alert(response.error || 'Failed to update phone number');
         return;
       }
       alert('Phone number updated successfully');
@@ -95,14 +94,12 @@ export default function AdminDashboard() {
   const sendResetOtp = async () => {
     setAccountBusy(true);
     try {
-      const res = await fetch('/api/admin/otp/send', {
+      const response = await apiRequest('/api/admin/otp/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: account.email, purpose: 'admin-account-reset' }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Failed to send OTP');
+      if (!response.success) {
+        alert(response.error || 'Failed to send OTP');
         return;
       }
       setResetOtpSent(true);
@@ -117,18 +114,16 @@ export default function AdminDashboard() {
   const verifyResetOtp = async () => {
     setAccountBusy(true);
     try {
-      const res = await fetch('/api/admin/otp/verify', {
+      const response = await apiRequest('/api/admin/otp/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: account.email, otp: resetOtp, purpose: 'admin-account-reset' }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Invalid OTP');
+      if (!response.success) {
+        alert(response.error || 'Invalid OTP');
         return;
       }
       setResetOtpVerified(true);
-      setResetToken(data.verificationToken);
+      setResetToken(response.data.verificationToken);
       alert('OTP verified successfully');
     } catch {
       alert('Unable to verify OTP right now');
@@ -149,14 +144,12 @@ export default function AdminDashboard() {
 
     setAccountBusy(true);
     try {
-      const res = await fetch('/api/admin/account/password-reset', {
+      const response = await apiRequest('/api/admin/account/password-reset', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword, verificationToken: resetToken }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Password reset failed');
+      if (!response.success) {
+        alert(response.error || 'Password reset failed');
         return;
       }
 
@@ -184,19 +177,17 @@ export default function AdminDashboard() {
 
     setInviteBusy(true);
     try {
-      const res = await fetch('/api/admin/invite', {
+      const response = await apiRequest('/api/admin/invite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: inviteEmail }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setInviteMessage(data.error || 'Failed to send invite.');
+      if (!response.success) {
+        setInviteMessage(response.error || 'Failed to send invite.');
         return;
       }
 
-      setInviteMessage(`Invite sent to ${data.email}. Expires in 24 hours.`);
+      setInviteMessage(`Invite sent to ${response.data.email}. Expires in 24 hours.`);
       setInviteEmail('');
     } catch {
       setInviteMessage('Unable to send invite right now.');
@@ -209,16 +200,16 @@ export default function AdminDashboard() {
     e.preventDefault();
     setCreatingEvent(true);
     try {
-      const res = await fetch('/api/admin/events', {
+      const response = await apiRequest('/api/admin/events', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEvent)
       });
-      if (res.ok) {
-        const result = await res.json();
+      if (response.success) {
         setNewEvent({ title: '', date: '', description: '', type: 'General', location: '' });
         fetchData();
-        alert(result.message || '✓ Event created successfully!');
+        alert(response.message || '✓ Event created successfully!');
+      } else {
+        alert(response.error || 'Failed to create event');
       }
     } catch (err) {
       alert('Failed to create event');
@@ -234,21 +225,17 @@ export default function AdminDashboard() {
     abortControllerRef.current = new AbortController();
     
     try {
-      const res = await fetch('/api/admin/notify', {
+      const response = await apiRequest('/api/admin/notify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventId }),
         signal: abortControllerRef.current.signal
       });
       
-      if (res.ok) {
-        const result = await res.json();
-        
-        // Show confetti animation instead of alert
+      if (response.success) {
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 2000);
       } else {
-        alert('Failed to send notifications');
+        alert('Failed to send notifications: ' + response.error);
       }
     } catch (err) {
       if (err.name === 'AbortError') {
@@ -272,17 +259,16 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to delete this event? This cannot be undone.')) return;
     
     try {
-      const res = await fetch('/api/admin/events', {
+      const response = await apiRequest('/api/admin/events', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventId })
       });
       
-      if (res.ok) {
+      if (response.success) {
         alert('Event deleted successfully');
         fetchData();
       } else {
-        alert('Failed to delete event');
+        alert('Failed to delete event: ' + response.error);
       }
     } catch (err) {
       alert('Error deleting event');
@@ -291,7 +277,7 @@ export default function AdminDashboard() {
 
   const logout = async () => {
     try {
-      await fetch('/api/admin/logout', { method: 'POST' });
+      await apiRequest('/api/admin/logout', { method: 'POST' });
     } finally {
       router.push('/admin/login');
     }
@@ -319,7 +305,6 @@ export default function AdminDashboard() {
 
         {activeTab === 'events' ? (
           <div className="events-content fade-in">
-            {/* Create Event Form */}
             <section className="admin-section glass-card">
               <h3>Create New Event</h3>
               <form onSubmit={handleCreateEvent} className="admin-form">
@@ -360,7 +345,6 @@ export default function AdminDashboard() {
               </form>
             </section>
 
-            {/* List Events */}
             <section className="admin-section glass-card" style={{ marginTop: '40px' }}>
               <h3>Existing Events</h3>
               <div className="admin-list">
@@ -373,38 +357,13 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                       {notifyingEventId === ev.id ? (
                         <>
-                          <button 
-                            className="btn btn-secondary" 
-                            disabled
-                            style={{ opacity: 0.6 }}
-                          >
-                            Sending...
-                          </button>
-                          <button 
-                            className="btn btn-danger" 
-                            onClick={handleCancelNotify}
-                            style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                          >
-                            Cancel
-                          </button>
+                          <button className="btn btn-secondary" disabled style={{ opacity: 0.6 }}>Sending...</button>
+                          <button className="btn btn-danger" onClick={handleCancelNotify} style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Cancel</button>
                         </>
                       ) : (
                         <>
-                          <button 
-                            className="btn btn-secondary" 
-                            onClick={() => handleNotify(ev.id)}
-                            disabled={notifyingEventId !== null}
-                          >
-                            Notify All
-                          </button>
-                          <button 
-                            className="btn btn-danger" 
-                            onClick={() => handleDeleteEvent(ev.id)}
-                            disabled={notifyingEventId !== null}
-                            style={{ background: '#ef4444', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                          >
-                            Delete
-                          </button>
+                          <button className="btn btn-secondary" onClick={() => handleNotify(ev.id)} disabled={notifyingEventId !== null}>Notify All</button>
+                          <button className="btn btn-danger" onClick={() => handleDeleteEvent(ev.id)} disabled={notifyingEventId !== null} style={{ background: '#ef4444', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Delete</button>
                         </>
                       )}
                     </div>
@@ -445,167 +404,65 @@ export default function AdminDashboard() {
             {account.role === 'primary' && (
               <div style={{ marginBottom: '26px' }}>
                 <h3 style={{ marginBottom: '12px' }}>Invite Admin</h3>
-                <p style={{ marginBottom: '10px', color: 'var(--text-muted)' }}>
-                  Invite-only onboarding: send a one-time setup link valid for 24 hours.
-                </p>
+                <p style={{ marginBottom: '10px', color: 'var(--text-muted)' }}>Invite-only onboarding: send a one-time setup link valid for 24 hours.</p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="new-admin@example.com"
-                    style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
-                  />
-                  <button className="btn btn-primary" onClick={sendAdminInvite} disabled={inviteBusy}>
-                    {inviteBusy ? 'Sending...' : 'Send Invite'}
-                  </button>
+                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="new-admin@example.com" style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }} />
+                  <button className="btn btn-primary" onClick={sendAdminInvite} disabled={inviteBusy}>{inviteBusy ? 'Sending...' : 'Send Invite'}</button>
                 </div>
-                {inviteMessage && (
-                  <p style={{ marginTop: '10px', color: inviteMessage.includes('sent') ? '#15803d' : '#b91c1c' }}>
-                    {inviteMessage}
-                  </p>
-                )}
+                {inviteMessage && <p style={{ marginTop: '10px', color: inviteMessage.includes('sent') ? '#15803d' : '#b91c1c' }}>{inviteMessage}</p>}
               </div>
             )}
 
             <div style={{ marginBottom: '26px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Phone Number</label>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
-                  placeholder="Enter phone number"
-                  style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
-                />
-                <button className="btn btn-secondary" onClick={updatePhoneNumber} disabled={accountBusy}>
-                  Update Phone
-                </button>
+                <input type="text" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="Enter phone number" style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }} />
+                <button className="btn btn-secondary" onClick={updatePhoneNumber} disabled={accountBusy}>Update Phone</button>
               </div>
             </div>
 
             <div style={{ marginBottom: '26px' }}>
               <h3 style={{ marginBottom: '12px' }}>Password Reset Through OTP</h3>
               <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                <input
-                  type="text"
-                  value={resetOtp}
-                  onChange={(e) => setResetOtp(e.target.value)}
-                  placeholder="Enter OTP"
-                  style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
-                  disabled={!resetOtpSent || resetOtpVerified}
-                />
-                <button className="btn btn-secondary" onClick={sendResetOtp} disabled={accountBusy || resetOtpVerified}>
-                  {resetOtpSent ? 'Resend OTP' : 'Send OTP'}
-                </button>
+                <input type="text" value={resetOtp} onChange={(e) => setResetOtp(e.target.value)} placeholder="Enter OTP" style={{ flex: 1, border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }} disabled={!resetOtpSent || resetOtpVerified} />
+                <button className="btn btn-secondary" onClick={sendResetOtp} disabled={accountBusy || resetOtpVerified}>{resetOtpSent ? 'Resend OTP' : 'Send OTP'}</button>
               </div>
-
-              <button
-                className="btn btn-secondary"
-                onClick={verifyResetOtp}
-                disabled={accountBusy || !resetOtpSent || resetOtpVerified}
-                style={{ marginBottom: '12px' }}
-              >
-                {resetOtpVerified ? 'OTP Verified' : 'Verify OTP'}
-              </button>
-
+              <button className="btn btn-secondary" onClick={verifyResetOtp} disabled={accountBusy || !resetOtpSent || resetOtpVerified} style={{ marginBottom: '12px' }}>{resetOtpVerified ? 'OTP Verified' : 'Verify OTP'}</button>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="New password"
-                  style={{ border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
-                />
-                <input
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  placeholder="Retype new password"
-                  style={{ border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }}
-                />
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" style={{ border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }} />
+                <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} placeholder="Retype new password" style={{ border: '2px solid #eee', borderRadius: '8px', padding: '10px 12px' }} />
               </div>
-
-              <button
-                className="btn btn-primary"
-                onClick={resetPasswordWithOtp}
-                disabled={accountBusy || !resetOtpVerified}
-                style={{ marginTop: '12px' }}
-              >
-                Reset Password
-              </button>
+              <button className="btn btn-primary" onClick={resetPasswordWithOtp} disabled={accountBusy || !resetOtpVerified} style={{ marginTop: '12px' }}>Reset Password</button>
             </div>
 
             <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-              <button className="btn btn-danger" onClick={logout} style={{ background: '#dc2626', color: '#fff' }}>
-                Logout
-              </button>
+              <button className="btn btn-danger" onClick={logout} style={{ background: '#dc2626', color: '#fff' }}>Logout</button>
             </div>
           </div>
         )}
       </main>
 
       <style jsx>{`
-        .admin-dashboard {
-          display: grid;
-          grid-template-columns: 280px 1fr;
-          min-height: 100vh;
-          background: var(--surface);
-          margin-top: -var(--header-height); /* Hide navbar impact for admin */
-          padding-top: var(--header-height);
-        }
-
-        .admin-sidebar {
-          margin: 20px;
-          height: calc(100vh - 120px);
-          padding: 40px 20px;
-          display: flex;
-          flex-direction: column;
-        }
-
+        .admin-dashboard { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; background: var(--surface); margin-top: -var(--header-height); padding-top: var(--header-height); }
+        .admin-sidebar { margin: 20px; height: calc(100vh - 120px); padding: 40px 20px; display: flex; flex-direction: column; }
         .admin-sidebar h3 { margin-bottom: 40px; color: var(--primary); }
-
         .admin-sidebar nav { display: flex; flex-direction: column; gap: 10px; }
-        .admin-sidebar button {
-          text-align: left;
-          padding: 12px 20px;
-          border-radius: 8px;
-          border: none;
-          background: transparent;
-          font-weight: 600;
-          cursor: pointer;
-          transition: var(--transition);
-        }
-
+        .admin-sidebar button { text-align: left; padding: 12px 20px; border-radius: 8px; border: none; background: transparent; font-weight: 600; cursor: pointer; transition: var(--transition); }
         .admin-sidebar button.active { background: var(--primary); color: white; }
         .admin-sidebar button:hover:not(.active) { background: rgba(0,0,0,0.05); }
-
         .logout { margin-top: auto; color: var(--blood); }
-
         .admin-main { padding: 40px 60px; overflow-y: auto; }
         .admin-header { margin-bottom: 40px; }
-
         .admin-section { padding: 40px; margin-bottom: 30px; }
         .admin-form label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
-        .admin-form input, .admin-form select, .admin-form textarea {
-          width: 100%; border: 2px solid #eee; padding: 10px 15px; border-radius: 8px; outline: none; font-family: inherit;
-        }
-
+        .admin-form input, .admin-form select, .admin-form textarea { width: 100%; border: 2px solid #eee; padding: 10px 15px; border-radius: 8px; outline: none; font-family: inherit; }
         .admin-list { margin-top: 20px; }
-        .admin-list-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px;
-          border-bottom: 1px solid #eee;
-        }
-
+        .admin-list-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; }
         .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
         .admin-table th { padding: 15px; border-bottom: 2px solid #eee; }
         .admin-table td { padding: 15px; border-bottom: 1px solid #eee; }
       `}</style>
 
-      {/* Confetti Animation */}
       {showConfetti && (
         <div className={styles.confettiContainer}>
           {Array.from({ length: 20 }).map((_, i) => (

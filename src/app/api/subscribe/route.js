@@ -9,9 +9,9 @@ import { verifyCaptchaToken } from '@/lib/captcha';
 export async function GET() {
   try {
     const subs = await readDB('subscribers.json');
-    return NextResponse.json(subs);
+    return NextResponse.json({ success: true, data: subs });
   } catch (err) {
-    return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal Error' }, { status: 500 });
   }
 }
 
@@ -23,7 +23,7 @@ export async function POST(request) {
   });
   if (rate.blocked) {
     return NextResponse.json(
-      { error: 'Too many subscribe attempts. Try again later.', retryAfterSec: rate.retryAfterSec },
+      { success: false, error: 'Too many subscribe attempts. Try again later.', retryAfterSec: rate.retryAfterSec },
       { status: 429 }
     );
   }
@@ -33,18 +33,18 @@ export async function POST(request) {
 
     const captcha = await verifyCaptchaToken(captchaToken, request, 'subscribe');
     if (!captcha.success) {
-      return NextResponse.json({ error: captcha.error }, { status: 400 });
+      return NextResponse.json({ success: false, error: captcha.error }, { status: 400 });
     }
 
     if (!name || !email || !phone) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
     const subscribers = await readDB('subscribers.json');
     
     // Check if already subscribed
     if (subscribers.find(s => s.email === email)) {
-      return NextResponse.json({ message: 'Already subscribed' }, { status: 200 });
+      return NextResponse.json({ success: true, message: 'Already subscribed' }, { status: 200 });
     }
 
     const newSubscriber = {

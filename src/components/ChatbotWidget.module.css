@@ -1,23 +1,21 @@
-/* ─── Floating Action Button ─── */
 .fabButton {
   position: fixed;
   bottom: 28px;
   right: 28px;
   z-index: 9998;
-  width: 62px;
-  height: 62px;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  background: linear-gradient(135deg, #FF7043, #E64A19);
+  background: linear-gradient(135deg, #FF5E14, #E64A19);
   color: #fff;
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 28px rgba(255, 112, 67, 0.45), 0 2px 8px rgba(0,0,0,0.10);
-  transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s ease;
-  animation: none;
+  box-shadow: 0 8px 32px rgba(255, 94, 20, 0.4), 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
 }
 
 .fabButton:hover {
@@ -69,34 +67,35 @@
   100% { transform: scale(1); }
 }
 
-/* ─── Chat Panel ─── */
 .chatPanel {
   position: fixed;
-  bottom: 96px;
+  bottom: 100px;
   right: 24px;
   z-index: 9999;
 
-  width: 380px;
-  height: 640px;
+  width: 400px;
+  height: 600px;
+  max-height: calc(100vh - 140px);
+  max-width: calc(100vw - 48px);
 
   background: #ffffff;
-  border-radius: 26px;
+  border-radius: 20px;
 
   border: 1px solid rgba(0,0,0,0.06);
 
   box-shadow:
-    0 24px 80px rgba(0,0,0,0.18),
-    0 8px 24px rgba(0,0,0,0.08);
+    0 12px 48px rgba(0,0,0,0.15),
+    0 4px 12px rgba(0,0,0,0.08);
 
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
-  animation: panelOpen 0.28s ease;
+  animation: panelOpen 0.3s cubic-bezier(.4, 0, .2, 1);
 }
 
 @keyframes panelOpen {
-  0% { opacity: 0; transform: scale(0.85) translateY(20px); }
+  0% { opacity: 0; transform: scale(0.9) translateY(20px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
@@ -113,8 +112,8 @@
 .chatHeader {
   background: linear-gradient(
     135deg,
-    #ff6b35 0%,
-    #f4511e 100%
+    #FF5E14 0%,
+    #E64A19 100%
   );
 
   padding: 16px 18px;
@@ -280,7 +279,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF7043, #FFA726);
+  background: linear-gradient(135deg, #FF5E14, #E64A19);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,8 +306,8 @@
 .userBubble {
   background: linear-gradient(
     135deg,
-    #ff6b35,
-    #f4511e
+    #FF5E14,
+    #E64A19
   );
 
   color: white;
@@ -318,7 +317,7 @@
   padding: 11px 15px;
 
   box-shadow:
-    0 4px 14px rgba(244,81,30,0.22);
+    0 4px 14px rgba(230, 74, 25, 0.25);
 
   font-weight: 500;
 }
@@ -448,7 +447,7 @@
   font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.2s;
-  background: linear-gradient(135deg, #FF7043, #E64A19);
+  background: linear-gradient(135deg, #FF5E14, #E64A19);
   color: #fff;
 }
 
@@ -629,16 +628,17 @@
   line-height: 1.5;
 }
 
-/* ─── Responsive ─── */
+/* ─── Responsive & Screen Fitting ─── */
 @media (max-width: 480px) {
   .chatPanel {
     bottom: 0;
     right: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    border-radius: 0;
+    height: 100dvh;
     max-height: 100dvh;
+    border-radius: 0;
+    z-index: 10000;
   }
 
   .fabButton {
@@ -647,19 +647,25 @@
     width: 56px;
     height: 56px;
     font-size: 1.5rem;
+    display: none; /* Hide FAB when open on mobile if preferred, or just leave as is */
   }
 }
 
+/* Tablet & Smaller Screens */
 @media (max-width: 768px) and (min-width: 481px) {
   .chatPanel {
-    width: 360px;
-    height: 520px;
+    width: 380px;
+    height: calc(100vh - 120px);
+    max-height: 600px;
     bottom: 90px;
-    right: 16px;
+    right: 20px;
   }
+}
 
-  .fabButton {
-    bottom: 20px;
-    right: 16px;
+/* Handle short screens (laptops with bars, etc.) */
+@media (max-height: 750px) {
+  .chatPanel {
+    height: calc(100vh - 140px);
+    bottom: 100px;
   }
 }

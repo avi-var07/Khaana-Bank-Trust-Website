@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { apiRequest } from '@/lib/apiClient';
 import styles from './ChatbotWidget.module.css';
 
 const QUICK_ACTIONS = [
@@ -119,48 +120,41 @@ export default function ChatbotWidget() {
     setIsLoading(true);
     setPendingAction(null);
 
-    const baseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
-    
-    try {
-      const res = await fetch(`${baseUrl}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: trimmed,
-          history: getHistory(),
-        }),
-      });
+    const response = await apiRequest('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: trimmed,
+        history: getHistory(),
+      }),
+    });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
-
-      const botMsg = {
-        role: 'bot',
-        text: data.message || "I'm sorry, I couldn't process that. Please try again.",
-        time: new Date(),
-      };
-      setMessages(prev => [...prev, botMsg]);
-
-      // Handle action if present
-      if (data.action && data.action.actionRequired) {
-        setPendingAction(data.action);
-      }
-    } catch (err) {
+    if (!response.success) {
       setMessages(prev => [
         ...prev,
         {
           role: 'bot',
-          text: err.message || 'Sorry, something went wrong. Please try again later. 🙏',
+          text: response.error,
           time: new Date(),
           isError: true,
         },
       ]);
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    const { data } = response;
+    const botMsg = {
+      role: 'bot',
+      text: data.message || "I'm sorry, I couldn't process that. Please try again.",
+      time: new Date(),
+    };
+    setMessages(prev => [...prev, botMsg]);
+
+    // Handle action if present
+    if (data.action && data.action.actionRequired) {
+      setPendingAction(data.action);
+    }
+    setIsLoading(false);
   }
 
   async function handleConfirmAction() {
@@ -170,14 +164,12 @@ export default function ChatbotWidget() {
     const { actionType, data } = pendingAction;
 
     try {
-      let result = null;
+      let response = null;
 
-      const baseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
       switch (actionType) {
         case 'REGISTER_VOLUNTEER': {
-          const res = await fetch(`${baseUrl}/api/volunteer`, {
+          response = await apiRequest('/api/volunteer', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               name: data.name,
               email: data.email,
@@ -187,9 +179,10 @@ export default function ChatbotWidget() {
               message: data.message || '',
             }),
           });
-          result = await res.json();
-          if (!res.ok) throw new Error(result.error || 'Registration failed');
+          
+          if (!response.success) throw new Error(response.error);
 
+          const { data: result } = response;
           setMessages(prev => [
             ...prev,
             {
@@ -217,9 +210,8 @@ export default function ChatbotWidget() {
         }
 
         case 'SUBSCRIBE_USER': {
-          const res = await fetch(`${baseUrl}/api/subscribe`, {
+          response = await apiRequest('/api/subscribe', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               name: data.name,
               email: data.email,
@@ -227,9 +219,10 @@ export default function ChatbotWidget() {
               captchaToken: 'chatbot-verified',
             }),
           });
-          result = await res.json();
-          if (!res.ok && res.status !== 200) throw new Error(result.error || 'Subscription failed');
+          
+          if (!response.success) throw new Error(response.error);
 
+          const { data: result } = response;
           setMessages(prev => [
             ...prev,
             {
@@ -242,9 +235,8 @@ export default function ChatbotWidget() {
         }
 
         case 'GENERATE_BLOG_DRAFT': {
-          const res = await fetch(`${baseUrl}/api/chatbot/blog-draft`, {
+          response = await apiRequest('/api/chatbot/blog-draft', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               title: data.title,
               content: data.content,
@@ -253,8 +245,8 @@ export default function ChatbotWidget() {
               imageDescription: data.imageDescription || '',
             }),
           });
-          result = await res.json();
-          if (!res.ok) throw new Error(result.error || 'Failed to save draft');
+          
+          if (!response.success) throw new Error(response.error);
 
           setMessages(prev => [
             ...prev,

@@ -7,6 +7,7 @@ export async function POST(request) {
 
     if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'rzp_test_placeholder') {
       return NextResponse.json({ 
+        success: false,
         error: 'Razorpay API keys not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env.local.',
       }, { status: 501 });
     }
@@ -21,13 +22,16 @@ export async function POST(request) {
     const order = await razorpay.orders.create(options);
 
     return NextResponse.json({ 
-      id: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      key_id: process.env.RAZORPAY_KEY_ID
+      success: true,
+      data: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        key_id: process.env.RAZORPAY_KEY_ID
+      }
     });
   } catch (err) {
     console.error('Razorpay order error:', err);
-    return NextResponse.json({ error: 'Failed to create Razorpay order' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to create Razorpay order' }, { status: 500 });
   }
 }
